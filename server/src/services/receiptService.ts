@@ -35,9 +35,10 @@ export class ReceiptService {
         CRITICAL RULES:
         1. **Price is UNIT PRICE**: The 'price' field must be the the price per single item. If quantity is 2 and the receipt shows 38.00, extract price as 19.00.
         2. **Tax & Service Charge**: Extract the "Tax" (VAT/GST) and "Service Charge" (SVC/SC) if present as percentages of the subtotal.
-        3. **Anti-Hallucination**: DO NOT guess or invent items. If text is blurry or cut off, skip it.
-        4. **Unsure Marking**: If not 100% sure of name or price, prefix with "[UNSURE] ".
-        5. **Mathematical Consistency**: Aim for the sum of (price × quantity) for all items to match the subtotal on the receipt. If there's a minor rounding difference, prioritize the prices shown on the receipt.
+        3. **Base Price Priority**: NEVER include the identified Tax or Service Charge amounts in the item 'price' field. The 'price' must be the BASE price. If the receipt prices are "Tax inclusive", set 'tax_rate' to 0 to avoid double counting.
+        4. **Anti-Hallucination**: DO NOT guess or invent items. If text is blurry or cut off, skip it.
+        5. **Unsure Marking**: If not 100% sure of name or price, prefix with "[UNSURE] ".
+        6. **Mathematical Consistency**: Aim for the sum of (price × quantity) for all items to match the subtotal on the receipt. If there's a minor rounding difference, prioritize the prices shown on the receipt.
         
         Return ONLY a JSON object:
         {
