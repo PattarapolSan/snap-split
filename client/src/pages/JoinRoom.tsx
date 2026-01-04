@@ -23,6 +23,11 @@ const JoinRoom = () => {
             const data = await api.getRoomState(code);
             setParticipants(data.participants || []);
             setOnlineIds(data.onlineParticipantIds || []);
+
+            // Save to recent history if we successfully found a room
+            import('../lib/storage').then(({ storage }) => {
+                storage.saveRoomVisit(code, data.room.name);
+            });
         } catch (e) {
             console.error("Failed to fetch participants", e);
         } finally {

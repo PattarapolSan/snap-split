@@ -24,6 +24,11 @@ const CreateRoom = () => {
             // Simple way: localStorage or pass via state.
             localStorage.setItem(`snap-split-user-${room.code}`, userName);
 
+            // Add to recent rooms history immediately
+            import('../lib/storage').then(({ storage }) => {
+                storage.saveRoomVisit(room.code, room.name, userName);
+            });
+
             navigate(`/room/${room.code}`);
         } catch (error) {
             console.error(error);

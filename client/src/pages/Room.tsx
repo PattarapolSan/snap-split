@@ -29,7 +29,7 @@ const Room = () => {
                 store.setRoomData(data);
 
                 // Save to recent bills history
-                storage.saveRoomVisit(code, data.name, savedName || undefined);
+                storage.saveRoomVisit(code, data.room.name, savedName || undefined);
 
                 if (savedName) {
                     const me = data.participants.find((p: any) => p.name === savedName);
