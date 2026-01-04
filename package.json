@@ -1,0 +1,29 @@
+{
+  "name": "snap-split",
+  "version": "1.0.0",
+  "description": "Bill splitting app - no login required",
+  "private": true,
+  "workspaces": [
+    "client",
+    "server",
+    "shared"
+  ],
+  "scripts": {
+    "dev:client": "npm run dev --workspace=client",
+    "dev:server": "npm run dev --workspace=server",
+    "dev": "concurrently \"npm run dev:client\" \"npm run dev:server\"",
+    "build:client": "npm run build --workspace=client",
+    "build:server": "npm run build --workspace=server",
+    "build": "npm test && npm run build:client && npm run build:server",
+    "start": "npm start --workspace=server",
+    "test": "npm test --workspaces",
+    "test:client": "npm test --workspace=client",
+    "test:server": "npm test --workspace=server"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
