@@ -7,13 +7,28 @@ interface RoomHeaderProps {
     roomCode: string;
     roomName: string;
     participantCount: number;
+    taxRate: number;
+    serviceChargeRate: number;
     canDelete?: boolean;
     onDelete?: () => void;
+    onUpdateRates?: (taxRate: number, serviceChargeRate: number) => void;
 }
 
-const RoomHeader: React.FC<RoomHeaderProps> = ({ roomCode, roomName, participantCount, canDelete, onDelete }) => {
+const RoomHeader: React.FC<RoomHeaderProps> = ({
+    roomCode,
+    roomName,
+    participantCount,
+    taxRate,
+    serviceChargeRate,
+    canDelete,
+    onDelete,
+    onUpdateRates
+}) => {
     const navigate = useNavigate();
     const [showQR, setShowQR] = useState(false);
+    const [showRates, setShowRates] = useState(false);
+    const [tempTax, setTempTax] = useState(taxRate);
+    const [tempSC, setTempSC] = useState(serviceChargeRate);
     const [copied, setCopied] = useState(false);
 
     const handleCopy = () => {
@@ -26,6 +41,11 @@ const RoomHeader: React.FC<RoomHeaderProps> = ({ roomCode, roomName, participant
         if (confirm('Are you sure you want to delete this bill? This cannot be undone.')) {
             onDelete?.();
         }
+    };
+
+    const handleSaveRates = () => {
+        onUpdateRates?.(tempTax, tempSC);
+        setShowRates(false);
     };
 
     return (
@@ -66,16 +86,33 @@ const RoomHeader: React.FC<RoomHeaderProps> = ({ roomCode, roomName, participant
                         </div>
                     </div>
                     <div className="flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto gap-3 pt-3 sm:pt-0 border-t sm:border-t-0 border-gray-50">
-                        <div className="bg-gray-100 px-3 py-1 rounded-full text-[10px] font-bold text-gray-600 uppercase tracking-tighter">
-                            {participantCount} participants
+                        <div className="flex flex-col items-end gap-1">
+                            <div className="bg-gray-100 px-3 py-1 rounded-full text-[10px] font-bold text-gray-600 uppercase tracking-tighter">
+                                {participantCount} participants
+                            </div>
+                            <div className="text-[10px] font-bold text-primary-500 uppercase tracking-tighter">
+                                {serviceChargeRate}% SC • {taxRate}% Tax
+                            </div>
                         </div>
                         {canDelete && (
-                            <button
-                                onClick={handleDelete}
-                                className="text-xs text-red-500 font-semibold hover:text-red-700 hover:bg-red-50 px-2 py-1 rounded-lg transition-colors"
-                            >
-                                Delete Bill
-                            </button>
+                            <div className="flex gap-3 items-center">
+                                <button
+                                    onClick={() => {
+                                        setTempTax(taxRate);
+                                        setTempSC(serviceChargeRate);
+                                        setShowRates(true);
+                                    }}
+                                    className="text-xs text-primary-600 font-semibold hover:text-primary-700 hover:bg-primary-50 px-2 py-1 rounded-lg transition-colors"
+                                >
+                                    Edit Rates
+                                </button>
+                                <button
+                                    onClick={handleDelete}
+                                    className="text-xs text-red-500 font-semibold hover:text-red-700 hover:bg-red-50 px-2 py-1 rounded-lg transition-colors"
+                                >
+                                    Delete Bill
+                                </button>
+                            </div>
                         )}
                     </div>
                 </div>
@@ -100,6 +137,53 @@ const RoomHeader: React.FC<RoomHeaderProps> = ({ roomCode, roomName, participant
                         >
                             Close
                         </button>
+                    </div>
+                </div>
+            )}
+            {showRates && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50" onClick={() => setShowRates(false)}>
+                    <div className="bg-white p-6 rounded-3xl shadow-2xl max-w-sm w-full animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
+                        <h3 className="text-xl font-black mb-6 text-gray-900 flex items-center gap-2">
+                            🧾 Adjust Rates
+                        </h3>
+
+                        <div className="space-y-5">
+                            <div>
+                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Service Charge (%)</label>
+                                <input
+                                    type="number"
+                                    value={tempSC}
+                                    onChange={e => setTempSC(Number(e.target.value))}
+                                    className="w-full bg-gray-50 border-2 border-gray-100 rounded-2xl px-4 py-3 font-bold text-gray-900 focus:outline-none focus:border-primary-500 transition-all"
+                                    placeholder="e.g. 10"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Tax Rate (VAT/GST %)</label>
+                                <input
+                                    type="number"
+                                    value={tempTax}
+                                    onChange={e => setTempTax(Number(e.target.value))}
+                                    className="w-full bg-gray-50 border-2 border-gray-100 rounded-2xl px-4 py-3 font-bold text-gray-900 focus:outline-none focus:border-primary-500 transition-all"
+                                    placeholder="e.g. 7"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex gap-3 mt-8">
+                            <button
+                                onClick={() => setShowRates(false)}
+                                className="flex-1 bg-gray-50 hover:bg-gray-100 text-gray-500 font-bold py-3 rounded-2xl transition-all"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleSaveRates}
+                                className="flex-1 bg-primary-600 hover:bg-primary-700 text-white font-bold py-3 rounded-2xl shadow-lg shadow-primary-100 transition-all active:scale-95"
+                            >
+                                Save Changes
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

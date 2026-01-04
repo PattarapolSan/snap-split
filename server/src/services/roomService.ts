@@ -23,15 +23,18 @@ export class RoomService {
             creator_name: creatorName,
             status: 'active',
             created_at: new Date().toISOString(),
-            expires_at: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString() // 5 days
+            expires_at: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(), // 5 days
+            tax_rate: 0,
+            service_charge_rate: 0
         };
 
         await repository.createRoom(room);
-
-        // Add creator as participant
         await this.joinRoom(room.code, creatorName);
-
         return room;
+    }
+
+    async updateRoom(roomId: string, updates: Partial<Room>): Promise<Room | null> {
+        return await repository.updateRoom(roomId, updates);
     }
 
     async joinRoom(code: string, participantName: string): Promise<Participant | null> {

@@ -6,15 +6,24 @@ interface ItemListProps {
     items: Item[];
     assignments: Assignment[];
     participants: Participant[];
+    taxRate: number;
+    serviceChargeRate: number;
     currentUserId?: string;
     onAssign: (itemId: string) => void;
     onDelete: (itemId: string) => void;
     onEdit: (itemId: string, name: string, price: number, quantity: number) => void;
 }
 
-const ItemList: React.FC<ItemListProps> = ({ items, assignments, participants, currentUserId, onAssign, onDelete, onEdit }) => {
+const ItemList: React.FC<ItemListProps> = ({
+    items, assignments, participants, taxRate, serviceChargeRate, currentUserId, onAssign, onDelete, onEdit
+}) => {
+    // Calculate Subtotal (Items only)
+    const subtotal = items.reduce((sum, item) => sum + (item.price * (item.quantity || 1)), 0);
+
     // Calculate Grand Total
-    const totalBill = items.reduce((sum, item) => sum + (item.price * (item.quantity || 1)), 0);
+    const serviceCharge = subtotal * (serviceChargeRate / 100);
+    const tax = (subtotal + serviceCharge) * (taxRate / 100);
+    const grandTotal = subtotal + serviceCharge + tax;
 
     const handleEditClick = (e: React.MouseEvent, item: Item) => {
         e.stopPropagation();
@@ -58,9 +67,20 @@ const ItemList: React.FC<ItemListProps> = ({ items, assignments, participants, c
     return (
         <div className="space-y-4">
             {/* Total Section */}
-            <div className="flex justify-between items-center p-4 bg-gray-900 text-white rounded-xl shadow-md">
-                <span className="font-semibold text-lg">Total Bill</span>
-                <span className="font-bold text-2xl">฿{totalBill.toLocaleString()}</span>
+            <div className="p-4 bg-gray-900 text-white rounded-xl shadow-md space-y-2">
+                <div className="flex justify-between items-center">
+                    <span className="font-semibold text-lg">Grand Total</span>
+                    <span className="font-bold text-2xl">฿{grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                </div>
+                {(taxRate > 0 || serviceChargeRate > 0) && (
+                    <div className="flex justify-between items-center text-xs text-gray-400 border-t border-gray-800 pt-2">
+                        <span>Items: ฿{subtotal.toLocaleString()}</span>
+                        <div className="flex gap-3">
+                            {serviceChargeRate > 0 && <span>SVC {serviceChargeRate}%</span>}
+                            {taxRate > 0 && <span>TAX {taxRate}%</span>}
+                        </div>
+                    </div>
+                )}
             </div>
 
             <div className="space-y-3">

@@ -9,6 +9,8 @@ interface SummaryModalProps {
     roomName: string;
     roomCode: string;
     creatorName: string;
+    taxRate: number;
+    serviceChargeRate: number;
 }
 
 const SummaryModal: React.FC<SummaryModalProps> = ({
@@ -17,7 +19,9 @@ const SummaryModal: React.FC<SummaryModalProps> = ({
     splits,
     roomName,
     roomCode,
-    creatorName
+    creatorName,
+    taxRate,
+    serviceChargeRate
 }) => {
     const [copied, setCopied] = React.useState(false);
     if (!isOpen) return null;
@@ -32,20 +36,28 @@ const SummaryModal: React.FC<SummaryModalProps> = ({
             ''
         ];
 
+        const subtotal = splits.reduce((sum, s) => sum + s.subtotalOwed, 0);
+        const serviceCharge = subtotal * (serviceChargeRate / 100);
+        const tax = (subtotal + serviceCharge) * (taxRate / 100);
+
         splits.forEach(s => {
             if (s.totalOwed > 0) {
                 lines.push(`👤 *${s.participantName}*`);
-                // Add item breakdown to copy text
                 s.items.forEach(item => {
                     lines.push(`- ${item.itemName}: ฿${item.amount.toLocaleString()}`);
                 });
+                if (serviceChargeRate > 0) lines.push(`- Service Charge (${serviceChargeRate}%): ฿${(s.subtotalOwed * (serviceChargeRate / 100)).toLocaleString()}`);
+                if (taxRate > 0) lines.push(`- Tax (${taxRate}%): ฿${((s.subtotalOwed + (s.subtotalOwed * (serviceChargeRate / 100))) * (taxRate / 100)).toLocaleString()}`);
                 lines.push(`💰 *Total: ฿${s.totalOwed.toLocaleString()}*`);
                 lines.push('');
             }
         });
 
         lines.push(`--------------------------`);
-        lines.push(`📍 Total Bill: ฿${totalBill.toLocaleString()}`);
+        lines.push(`📍 Subtotal: ฿${subtotal.toLocaleString()}`);
+        if (serviceChargeRate > 0) lines.push(`⚙️ Service Charge (${serviceChargeRate}%): ฿${serviceCharge.toLocaleString()}`);
+        if (taxRate > 0) lines.push(`🏦 Tax (${taxRate}%): ฿${tax.toLocaleString()}`);
+        lines.push(`🚩 Total Bill: ฿${totalBill.toLocaleString()}`);
         lines.push(`💸 Pay to: *${creatorName}*`);
         lines.push('');
         lines.push(`Join here: ${window.location.origin}/join?code=${roomCode}`);
@@ -87,7 +99,6 @@ const SummaryModal: React.FC<SummaryModalProps> = ({
                                 </span>
                             </div>
 
-                            {/* Item breakdown in UI */}
                             <div className="space-y-1.5 border-t border-gray-200/50 pt-2 mt-2">
                                 {split.items.map((item, idx) => (
                                     <div key={`${item.itemId}-${idx}`} className="flex justify-between text-[13px]">
@@ -95,15 +106,45 @@ const SummaryModal: React.FC<SummaryModalProps> = ({
                                         <span className="text-gray-600 font-medium shrink-0">฿{item.amount.toLocaleString()}</span>
                                     </div>
                                 ))}
+                                {serviceChargeRate > 0 && (
+                                    <div className="flex justify-between text-[11px] font-medium text-gray-400 italic">
+                                        <span>Service Charge ({serviceChargeRate}%)</span>
+                                        <span>฿{(split.subtotalOwed * (serviceChargeRate / 100)).toLocaleString()}</span>
+                                    </div>
+                                )}
+                                {taxRate > 0 && (
+                                    <div className="flex justify-between text-[11px] font-medium text-gray-400 italic">
+                                        <span>Tax ({taxRate}%)</span>
+                                        <span>฿{((split.subtotalOwed + (split.subtotalOwed * (serviceChargeRate / 100))) * (taxRate / 100)).toLocaleString()}</span>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     ))}
 
-                    <div className="flex justify-between items-center py-5 px-5 bg-primary-50 rounded-2xl border-2 border-primary-100 mt-2">
-                        <span className="font-black text-primary-900 uppercase tracking-widest text-sm">Grand Total</span>
-                        <span className="font-black text-primary-700 text-2xl">
-                            ฿{totalBill.toLocaleString()}
-                        </span>
+                    <div className="p-5 bg-primary-50 rounded-3xl border-2 border-primary-100 mt-2 space-y-3">
+                        <div className="flex justify-between items-center text-sm font-bold text-primary-400 uppercase tracking-widest">
+                            <span>Subtotal</span>
+                            <span>฿{splits.reduce((sum, s) => sum + s.subtotalOwed, 0).toLocaleString()}</span>
+                        </div>
+                        {serviceChargeRate > 0 && (
+                            <div className="flex justify-between items-center text-sm font-bold text-primary-400 uppercase tracking-widest">
+                                <span>Service Charge ({serviceChargeRate}%)</span>
+                                <span>฿{(splits.reduce((sum, s) => sum + s.subtotalOwed, 0) * (serviceChargeRate / 100)).toLocaleString()}</span>
+                            </div>
+                        )}
+                        {taxRate > 0 && (
+                            <div className="flex justify-between items-center text-sm font-bold text-primary-400 uppercase tracking-widest">
+                                <span>Tax ({taxRate}%)</span>
+                                <span>฿{((splits.reduce((sum, s) => sum + s.subtotalOwed, 0) + (splits.reduce((sum, s) => sum + s.subtotalOwed, 0) * (serviceChargeRate / 100))) * (taxRate / 100)).toLocaleString()}</span>
+                            </div>
+                        )}
+                        <div className="flex justify-between items-center pt-3 border-t border-primary-200/50">
+                            <span className="font-black text-primary-900 uppercase tracking-widest text-sm">Total Bill</span>
+                            <span className="font-black text-primary-700 text-3xl">
+                                ฿{totalBill.toLocaleString()}
+                            </span>
+                        </div>
                     </div>
                 </div>
 

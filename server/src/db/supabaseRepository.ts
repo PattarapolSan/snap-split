@@ -29,6 +29,20 @@ export class SupabaseRepository implements Repository {
         return data;
     }
 
+    async updateRoom(roomId: string, updates: Partial<Room>): Promise<Room | null> {
+        if (!supabase) throw new Error('Supabase client not initialized');
+
+        const { data, error } = await supabase
+            .from('rooms')
+            .update(updates)
+            .eq('id', roomId)
+            .select()
+            .single();
+
+        if (error) throw error;
+        return data;
+    }
+
     async addParticipant(participant: Participant): Promise<Participant> {
         if (!supabase) throw new Error('Supabase client not initialized');
 

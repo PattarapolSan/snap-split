@@ -44,12 +44,40 @@ if (process.env.NODE_ENV === 'production') {
     });
 }
 
+const getOnlineParticipants = (roomCode: string) => {
+    const sockets = io.sockets.adapter.rooms.get(roomCode);
+    if (!sockets) return [];
+
+    const participantIds = new Set<string>();
+    sockets.forEach(socketId => {
+        const s = io.sockets.sockets.get(socketId);
+        if (s?.data?.participantId) {
+            participantIds.add(s.data.participantId);
+        }
+    });
+    return Array.from(participantIds);
+};
+
 io.on('connection', (socket) => {
     console.log('Client connected:', socket.id);
 
-    socket.on('join-room', (roomCode) => {
+    socket.on('join-room', (roomCode, participantId) => {
         socket.join(roomCode);
-        console.log(`Socket ${socket.id} joined room ${roomCode}`);
+        socket.data.participantId = participantId;
+        console.log(`Socket ${socket.id} (Participant ${participantId}) joined room ${roomCode}`);
+
+        // Notify everyone about new presence
+        io.to(roomCode).emit('online-participants', getOnlineParticipants(roomCode));
+    });
+
+    socket.on('disconnecting', () => {
+        // Rooms are still available here
+        socket.rooms.forEach(room => {
+            // Wait a tiny bit for the socket to actually leave the room in adapter
+            // Or just filter out the current socket manually
+            const online = getOnlineParticipants(room).filter(id => id !== socket.data.participantId);
+            io.to(room).emit('online-participants', online);
+        });
     });
 
     socket.on('disconnect', () => {

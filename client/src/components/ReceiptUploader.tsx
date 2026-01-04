@@ -21,8 +21,8 @@ const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ roomCode, onItemsFoun
                 const canvas = document.createElement('canvas');
                 let width = img.width;
                 let height = img.height;
-                const MAX_WIDTH = 1024;
-                const MAX_HEIGHT = 1024;
+                const MAX_WIDTH = 2048;
+                const MAX_HEIGHT = 2048;
 
                 if (width > height) {
                     if (width > MAX_WIDTH) {
@@ -39,7 +39,10 @@ const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ roomCode, onItemsFoun
                 canvas.width = width;
                 canvas.height = height;
                 const ctx = canvas.getContext('2d');
-                ctx?.drawImage(img, 0, 0, width, height);
+                if (ctx) {
+                    ctx.filter = 'contrast(1.1) brightness(1.02)';
+                    ctx.drawImage(img, 0, 0, width, height);
+                }
 
                 canvas.toBlob((blob) => {
                     if (blob) {
@@ -67,13 +70,21 @@ const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ roomCode, onItemsFoun
             const result = await api.analysisReceipt(roomCode, processedFile);
 
             if (result.items && result.items.length > 0) {
+                // Apply Tax & Service Charge rates to the room
+                if (result.tax_rate > 0 || result.service_charge_rate > 0) {
+                    await api.updateRoom(roomCode, {
+                        tax_rate: result.tax_rate,
+                        service_charge_rate: result.service_charge_rate
+                    });
+                }
+
                 let count = 0;
                 for (const item of result.items) {
                     await api.addItem(roomCode, store.room!.id, item.name, item.price, item.quantity);
                     count++;
                 }
 
-                alert(`Successfully added ${count} items from receipt!`);
+                alert(`Successfully added ${count} items and updated Tax/Service Charge!`);
                 onItemsFound(result.items);
             } else {
                 alert('No items found in receipt. Please try again or enter manually.');

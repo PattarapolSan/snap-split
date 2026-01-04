@@ -21,9 +21,9 @@ router.post('/:code/analyze', upload.single('receipt'), async (req, res) => {
             return res.status(400).json({ error: 'No image uploaded' });
         }
 
-        const items = await receiptService.analyzeReceipt(req.file.buffer, req.file.mimetype);
+        const result = await receiptService.analyzeReceipt(req.file.buffer, req.file.mimetype);
 
-        res.json({ items });
+        res.json(result);
     } catch (error: any) {
         console.error('Analyze route error:', error);
         res.status(500).json({ error: error.message || 'Analysis failed' });

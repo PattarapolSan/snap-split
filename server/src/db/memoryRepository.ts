@@ -18,6 +18,15 @@ export class MemoryRepository implements Repository {
         return room || null;
     }
 
+    async updateRoom(roomId: string, updates: Partial<Room>): Promise<Room | null> {
+        const room = Array.from(this.rooms.values()).find(r => r.id === roomId);
+        if (!room) return null;
+
+        const updatedRoom = { ...room, ...updates };
+        this.rooms.set(updatedRoom.code, updatedRoom);
+        return updatedRoom;
+    }
+
     async addParticipant(participant: Participant): Promise<Participant> {
         this.participants.set(participant.id, participant);
         return participant;

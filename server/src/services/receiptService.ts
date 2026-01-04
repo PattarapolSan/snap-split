@@ -18,7 +18,11 @@ export class ReceiptService {
         });
     }
 
-    async analyzeReceipt(imageBuffer: Buffer, mediaType: string = 'image/jpeg'): Promise<Partial<Item>[]> {
+    async analyzeReceipt(imageBuffer: Buffer, mediaType: string = 'image/jpeg'): Promise<{
+        items: Partial<Item>[];
+        tax_rate: number;
+        service_charge_rate: number;
+    }> {
         if (!process.env.CLAUDE_API_KEY) {
             throw new Error('CLAUDE_API_KEY is not configured');
         }
@@ -26,15 +30,25 @@ export class ReceiptService {
         const base64Image = imageBuffer.toString('base64');
 
         const systemPrompt = `
-        You are a receipt scanning assistant.
-        Extract the list of purchased items from the receipt image.
-        Return ONLY a JSON array of objects with these fields:
-        - name (string): The name of the item
-        - price (number): The total price for this line item (if quantity > 1, total price, not unit price)
-        - quantity (number): The quantity (default to 1 if not specified)
+        You are a receipt scanning assistant. Extract purchased items and tax info from the image.
         
-        Do not include subtotal, tax, or total lines.
-        Do not include any text, markdown, or code blocks before or after the JSON array.
+        CRITICAL RULES:
+        1. **Price is UNIT PRICE**: The 'price' field must be the the price per single item. If quantity is 2 and the receipt shows 38.00, extract price as 19.00.
+        2. **Tax & Service Charge**: Extract the "Tax" (VAT/GST) and "Service Charge" (SVC/SC) if present as percentages of the subtotal.
+        3. **Anti-Hallucination**: DO NOT guess or invent items. If text is blurry or cut off, skip it.
+        4. **Unsure Marking**: If not 100% sure of name or price, prefix with "[UNSURE] ".
+        5. **Mathematical Consistency**: Aim for the sum of (price × quantity) for all items to match the subtotal on the receipt. If there's a minor rounding difference, prioritize the prices shown on the receipt.
+        
+        Return ONLY a JSON object:
+        {
+          "items": [
+            { "name": "ItemName", "price": 100.0, "quantity": 1 }
+          ],
+          "tax_rate": 7.0,
+          "service_charge_rate": 0.0
+        }
+        
+        Exclude subtotals, taxes, or total lines from the "items" list.
         `;
 
         try {
@@ -43,10 +57,7 @@ export class ReceiptService {
                 new HumanMessage({
                     content: [
                         {
-                            type: 'image_url', // LangChain uses 'image_url' for OpenAI compat, but usually accepts base64 for Anthropic too if structured right
-                            // Actually, standard LangChain image content block:
-                            // For Anthropic specifically, it might expect specific format or generic message content.
-                            // Let's use the generic 'image_url' with data URI which works across many LangChain providers
+                            type: 'image_url',
                             image_url: {
                                 url: `data:${mediaType};base64,${base64Image}`
                             }
@@ -58,19 +69,27 @@ export class ReceiptService {
             // Clean up content
             let contentText = typeof response.content === 'string' ? response.content : '';
             if (Array.isArray(response.content)) {
-                // If complex content, extract text
                 contentText = response.content.map(c => (c as any).text || '').join('');
             }
 
-            // Just in case model adds markdown
-            const jsonStr = contentText.replace(/```json/g, '').replace(/```/g, '').trim();
-            const items = JSON.parse(jsonStr);
+            // More robust JSON extraction
+            const jsonMatch = contentText.match(/\{[\s\S]*\}/);
+            if (!jsonMatch) {
+                console.error('No JSON found in response:', contentText);
+                throw new Error('Failed to find JSON data in receipt analysis');
+            }
 
-            return items.map((item: any) => ({
-                name: item.name,
-                price: Number(item.price),
-                quantity: Number(item.quantity) || 1
-            }));
+            const result = JSON.parse(jsonMatch[0]);
+
+            return {
+                items: (result.items || []).map((item: any) => ({
+                    name: item.name,
+                    price: Number(item.price),
+                    quantity: Number(item.quantity) || 1
+                })),
+                tax_rate: Number(result.tax_rate) || 0,
+                service_charge_rate: Number(result.service_charge_rate) || 0
+            };
 
         } catch (error) {
             console.error('Receipt analysis failed:', error);

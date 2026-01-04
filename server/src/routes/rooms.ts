@@ -18,6 +18,24 @@ router.post('/', async (req, res) => {
     }
 });
 
+// Update Room
+router.patch('/:code', async (req, res) => {
+    try {
+        const room = await roomService.getRoomState(req.params.code);
+        if (!room) return res.status(404).json({ error: 'Room not found' });
+
+        const updatedRoom = await roomService.updateRoom(room.room.id, req.body);
+        if (updatedRoom) {
+            io.to(req.params.code).emit('room-updated', updatedRoom);
+            res.json(updatedRoom);
+        } else {
+            res.status(404).json({ error: 'Room not found' });
+        }
+    } catch (e) {
+        res.status(500).json({ error: 'Failed to update room' });
+    }
+});
+
 // Get Room State
 router.get('/:code', async (req, res) => {
     try {
@@ -25,7 +43,23 @@ router.get('/:code', async (req, res) => {
         if (!state) {
             return res.status(404).json({ error: 'Room not found' });
         }
-        res.json(state);
+
+        // Get online participants from socket.io
+        const sockets = io.sockets.adapter.rooms.get(req.params.code);
+        const onlineParticipantIds = new Set<string>();
+        if (sockets) {
+            sockets.forEach(socketId => {
+                const s = io.sockets.sockets.get(socketId);
+                if (s?.data?.participantId) {
+                    onlineParticipantIds.add(s.data.participantId);
+                }
+            });
+        }
+
+        res.json({
+            ...state,
+            onlineParticipantIds: Array.from(onlineParticipantIds)
+        });
     } catch (e) {
         res.status(500).json({ error: 'Failed to get room' });
     }

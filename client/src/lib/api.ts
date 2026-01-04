@@ -92,5 +92,15 @@ export const api = {
         });
         if (!res.ok) throw new Error('Failed to delete room');
         return res.json();
+    },
+
+    updateRoom: async (code: string, updates: any) => {
+        const res = await fetch(`${API_URL}/rooms/${code}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updates),
+        });
+        if (!res.ok) throw new Error('Failed to update room');
+        return res.json();
     }
 };

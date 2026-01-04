@@ -56,22 +56,11 @@ describe('calculateSplits', () => {
         expect(result.find(r => r.participantId === 'p1')?.totalOwed).toBe(0);
     });
 
-    it('should handle multiple items', () => {
+    it('should handle multiple items with quantity', () => {
         const items: Item[] = [
             { id: '1', room_id: 'r1', name: 'Pizza', price: 100, quantity: 1 },
             { id: '2', room_id: 'r1', name: 'Coke', price: 20, quantity: 2 } // Total 40
         ];
-        // Note: quantity logic needs to be handled.
-        // If quantity is 2 and price is 20, is it 20 per item or 20 total?
-        // In our plan, price is per unit.
-        // Wait, the shared type says 'price: number'. Usually price is per unit.
-        // Let's assume price is total price for simplicity or check plan.
-        // Plan: "Coke x2 - 70". So price is likely total for the line item as entered from receipt.
-        // Let's stick to: price is the TOTAL price for that line item entry.
-
-        // Correction: In plan I wrote: "Coke x2 - $70".
-        // So price in Item interface should be interpreted as "Total Price for this entry".
-        // I will document this in implementation.
 
         const participants: Participant[] = [
             { id: 'p1', room_id: 'r1', name: 'Alice' },
@@ -80,8 +69,8 @@ describe('calculateSplits', () => {
 
         const assignments: Assignment[] = [
             { id: 'a1', item_id: '1', participant_id: 'p1', percentage: 100 }, // Alice pays all Pizza (100)
-            { id: 'a2', item_id: '2', participant_id: 'p2', percentage: 50 }, // Bob pays half Coke (10)
-            { id: 'a3', item_id: '2', participant_id: 'p1', percentage: 50 }  // Alice pays half Coke (10)
+            { id: 'a2', item_id: '2', participant_id: 'p2', percentage: 50 }, // Bob pays half Coke (20)
+            { id: 'a3', item_id: '2', participant_id: 'p1', percentage: 50 }  // Alice pays half Coke (20)
         ];
 
         const result = calculateSplits(items, assignments, participants);
@@ -89,8 +78,28 @@ describe('calculateSplits', () => {
         const alice = result.find(r => r.participantId === 'p1');
         const bob = result.find(r => r.participantId === 'p2');
 
-        expect(alice?.totalOwed).toBe(110); // 100 + 10
-        expect(bob?.totalOwed).toBe(10);   // 10
+        expect(alice?.totalOwed).toBe(120); // 100 + 20
+        expect(bob?.totalOwed).toBe(20);   // 20
+    });
 
+    it('should calculate splits with tax and service charge', () => {
+        const items: Item[] = [
+            { id: '1', room_id: 'r1', name: 'Pizza', price: 100, quantity: 1 }
+        ];
+        const participants: Participant[] = [
+            { id: 'p1', room_id: 'r1', name: 'Alice' }
+        ];
+        const assignments: Assignment[] = [
+            { id: 'a1', item_id: '1', participant_id: 'p1', percentage: 100 }
+        ];
+
+        // 10% Service Charge + 7% Tax
+        const result = calculateSplits(items, assignments, participants, 7, 10);
+
+        const alice = result.find(r => r.participantId === 'p1');
+
+        // 100 + 10 (SC) = 110
+        // 110 * 1.07 (Tax) = 117.7
+        expect(alice?.totalOwed).toBeCloseTo(117.7, 2);
     });
 });

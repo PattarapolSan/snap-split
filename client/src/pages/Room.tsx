@@ -50,7 +50,36 @@ const Room = () => {
         const socket = io(socketUrl);
 
         socket.on('connect', () => {
-            socket.emit('join-room', code);
+            // Check for saved participant identity
+            const savedName = localStorage.getItem(`snap-split-user-${code}`);
+            const fetchData = async () => {
+                try {
+                    const data = await api.getRoomState(code);
+                    store.setRoomData(data);
+
+                    if (savedName) {
+                        const me = data.participants.find((p: any) => p.name === savedName);
+                        if (me) {
+                            store.setCurrentUser(me);
+                            // Join socket room WITH participantId
+                            socket.emit('join-room', code, me.id);
+                        } else {
+                            socket.emit('join-room', code);
+                        }
+                    } else {
+                        socket.emit('join-room', code);
+                    }
+                    setLoading(false);
+                } catch (e) {
+                    console.error(e);
+                    alert('Failed to load room');
+                }
+            };
+            fetchData();
+        });
+
+        socket.on('online-participants', (onlineIds: string[]) => {
+            store.setOnlineParticipants(onlineIds);
         });
 
         socket.on('participant-joined', (participant: any) => {
@@ -77,23 +106,27 @@ const Room = () => {
             store.removeAssignment(assignmentId);
         });
 
+        socket.on('room-updated', (updatedRoom: any) => {
+            store.updateRoom(updatedRoom);
+        });
+
         return () => {
             socket.disconnect();
         };
     }, [code]);
 
     const handleAssign = async (itemId: string) => {
-        if (!store.currentUser || !code) return;
+        if (!store.activeParticipantId || !code) return;
 
         const existing = store.assignments.find(a =>
-            a.item_id === itemId && a.participant_id === store.currentUser!.id
+            a.item_id === itemId && a.participant_id === store.activeParticipantId
         );
 
         try {
             if (existing) {
                 await api.removeAssignment(code, existing.id);
             } else {
-                await api.assignItem(code, itemId, store.currentUser.id);
+                await api.assignItem(code, itemId, store.activeParticipantId);
             }
         } catch (e) {
             console.error("Assignment failed", e);
@@ -121,14 +154,29 @@ const Room = () => {
     };
 
     const handleAddItem = async () => {
-        // Temporary manual add item for testing
         const name = prompt("Item Name");
         if (!name) return;
-        const priceStr = prompt("Item Price");
+        const priceStr = prompt("Unit Price");
         if (!priceStr) return;
+        const qtyStr = prompt("Quantity", "1");
+        if (!qtyStr) return;
+
         const price = Number(priceStr);
-        if (name && price && code && store.room) {
-            await api.addItem(code, store.room.id, name, price, 1);
+        const quantity = Number(qtyStr);
+
+        if (name && !isNaN(price) && !isNaN(quantity) && code && store.room) {
+            await api.addItem(code, store.room.id, name, price, quantity);
+        }
+    };
+
+    const handleAddParticipant = async () => {
+        const name = prompt("Participant Name");
+        if (!name || !code) return;
+        try {
+            await api.joinRoom(code, name);
+        } catch (e) {
+            console.error("Failed to add participant", e);
+            alert("Failed to add participant");
         }
     };
 
@@ -157,8 +205,22 @@ const Room = () => {
                     roomCode={store.room.code}
                     roomName={store.room.name}
                     participantCount={store.participants.length}
+                    taxRate={store.room.tax_rate}
+                    serviceChargeRate={store.room.service_charge_rate}
                     canDelete={isCreator}
                     onDelete={handleDeleteRoom}
+                    onUpdateRates={async (taxRate, serviceChargeRate) => {
+                        if (!code) return;
+                        try {
+                            await api.updateRoom(code, {
+                                tax_rate: taxRate,
+                                service_charge_rate: serviceChargeRate
+                            });
+                        } catch (e) {
+                            console.error('Failed to update rates', e);
+                            alert('Failed to update rates');
+                        }
+                    }}
                 />
 
                 <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-gray-100">
@@ -182,7 +244,9 @@ const Room = () => {
                         items={store.items}
                         assignments={store.assignments}
                         participants={store.participants}
-                        currentUserId={store.currentUser?.id}
+                        taxRate={store.room.tax_rate}
+                        serviceChargeRate={store.room.service_charge_rate}
+                        currentUserId={store.activeParticipantId || undefined}
                         onAssign={handleAssign}
                         onDelete={handleDeleteItem}
                         onEdit={handleEditItem}
@@ -193,6 +257,10 @@ const Room = () => {
                     participants={store.participants}
                     splits={store.splits}
                     currentUserId={store.currentUser?.id}
+                    activeId={store.activeParticipantId}
+                    onlineParticipantIds={store.onlineParticipantIds}
+                    onSelectParticipant={(id) => store.setActiveParticipantId(id)}
+                    onAddParticipant={handleAddParticipant}
                 />
 
                 <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100">
@@ -213,6 +281,8 @@ const Room = () => {
                     roomName={store.room.name}
                     roomCode={store.room.code}
                     creatorName={store.room.creator_name}
+                    taxRate={store.room.tax_rate}
+                    serviceChargeRate={store.room.service_charge_rate}
                 />
             </div>
         </div>

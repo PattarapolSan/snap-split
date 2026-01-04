@@ -6,6 +6,8 @@ export interface Room {
     created_at: string;
     expires_at: string;
     status: 'active' | 'completed';
+    tax_rate: number; // Percentage (e.g., 7.0)
+    service_charge_rate: number; // Percentage (e.g., 10.0)
 }
 
 export interface Item {

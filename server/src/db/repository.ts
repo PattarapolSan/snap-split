@@ -3,6 +3,7 @@ import { Room, Item, Participant, Assignment, RoomState } from '@snap-split/shar
 export interface Repository {
     createRoom(room: Room): Promise<Room>;
     getRoom(code: string): Promise<Room | null>;
+    updateRoom(roomId: string, updates: Partial<Room>): Promise<Room | null>;
     addParticipant(participant: Participant): Promise<Participant>;
     getParticipants(roomId: string): Promise<Participant[]>;
     addItem(item: Item): Promise<Item>;
