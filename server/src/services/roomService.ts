@@ -41,9 +41,9 @@ export class RoomService {
         const room = await repository.getRoom(code);
         if (!room) return null;
 
-        // Check if name exists
+        // Check if name exists (case-insensitive)
         const participants = await repository.getParticipants(room.id);
-        const existing = participants.find(p => p.name === participantName);
+        const existing = participants.find(p => p.name.toLowerCase() === participantName.toLowerCase());
         if (existing) return existing;
 
         const participant: Participant = {

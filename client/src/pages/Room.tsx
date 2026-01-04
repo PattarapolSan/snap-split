@@ -170,8 +170,16 @@ const Room = () => {
     };
 
     const handleAddParticipant = async () => {
-        const name = prompt("Participant Name");
+        const name = prompt("Participant Name")?.trim();
         if (!name || !code) return;
+
+        // Check if name already exists (case-insensitive)
+        const exists = store.participants.some(p => p.name.toLowerCase() === name.toLowerCase());
+        if (exists) {
+            alert(`"${name}" is already in the room!`);
+            return;
+        }
+
         try {
             await api.joinRoom(code, name);
         } catch (e) {

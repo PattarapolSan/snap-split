@@ -95,6 +95,7 @@ export const useRoomStore = create<RoomState>((set) => ({
 
     addParticipant: (participant) => {
         set((state) => {
+            if (state.participants.some(p => p.id === participant.id)) return state;
             const newParticipants = [...state.participants, participant];
             return {
                 participants: newParticipants,
