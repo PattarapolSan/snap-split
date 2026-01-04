@@ -1,27 +1,21 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { api } from '../lib/api';
 
 const JoinRoom = () => {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
-    const nameInputRef = useRef<HTMLInputElement>(null);
-
     const urlCode = searchParams.get('code');
     const [roomCode, setRoomCode] = useState(urlCode || '');
-    const [userName, setUserName] = useState('');
     const [participants, setParticipants] = useState<any[]>([]);
     const [onlineIds, setOnlineIds] = useState<string[]>([]);
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        if (urlCode && nameInputRef.current) {
-            nameInputRef.current.focus();
-        }
         if (roomCode.length === 6) {
             fetchParticipants(roomCode);
         }
-    }, [urlCode, roomCode]);
+    }, [roomCode]);
 
     const fetchParticipants = async (code: string) => {
         try {
@@ -57,11 +51,6 @@ const JoinRoom = () => {
         }
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        await handleJoin(userName);
-    };
-
     return (
         <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gray-50">
             <div className="w-full max-w-md bg-white rounded-2xl shadow-sm p-8 border border-gray-100">
@@ -74,7 +63,7 @@ const JoinRoom = () => {
                     </p>
                 )}
 
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-4">
                     {!urlCode && (
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Room Code</label>
@@ -91,69 +80,61 @@ const JoinRoom = () => {
 
                     {loading && <div className="animate-pulse flex space-x-2 py-4"><div className="h-2 w-24 bg-gray-200 rounded"></div></div>}
 
-                    {participants.length > 0 && (
-                        <div className="space-y-3 pb-4 border-b border-gray-100 mb-6">
-                            <label className="block text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">Claim your name</label>
-                            <div className="flex flex-wrap gap-2">
-                                {participants.map((p) => {
-                                    const isOnline = onlineIds.includes(p.id);
-                                    return (
-                                        <button
-                                            key={p.id}
-                                            type="button"
-                                            disabled={isOnline}
-                                            onClick={() => handleJoin(p.name)}
-                                            className={`
+                    <div className="space-y-6">
+                        {participants.length > 0 ? (
+                            <div className="space-y-4">
+                                <label className="block text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">Claim your name</label>
+                                <div className="flex flex-wrap gap-2">
+                                    {participants.map((p) => {
+                                        const isOnline = onlineIds.includes(p.id);
+                                        return (
+                                            <button
+                                                key={p.id}
+                                                type="button"
+                                                disabled={isOnline}
+                                                onClick={() => handleJoin(p.name)}
+                                                className={`
                                                 px-4 py-2 rounded-xl font-bold border transition-all flex items-center gap-2
                                                 ${isOnline
-                                                    ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed opacity-60'
-                                                    : 'bg-primary-50 text-primary-700 border-primary-100 hover:bg-primary-100'
-                                                }
+                                                        ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed opacity-60'
+                                                        : 'bg-primary-50 text-primary-700 border-primary-100 hover:bg-primary-100 active:scale-95'
+                                                    }
                                             `}
-                                        >
-                                            <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] ${isOnline ? 'bg-gray-200' : 'bg-white'}`}>
-                                                {p.name.charAt(0).toUpperCase()}
-                                            </span>
-                                            {p.name}
-                                            {isOnline && <span className="text-[8px] font-black uppercase opacity-60">(Online)</span>}
-                                        </button>
-                                    );
-                                })}
+                                            >
+                                                <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] ${isOnline ? 'bg-gray-200' : 'bg-white'}`}>
+                                                    {p.name.charAt(0).toUpperCase()}
+                                                </span>
+                                                {p.name}
+                                                {isOnline && <span className="text-[8px] font-black uppercase opacity-60">(Online)</span>}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+
+                                <div className="mt-8 p-4 bg-gray-50 rounded-xl border border-gray-100">
+                                    <p className="text-sm text-gray-500 text-center leading-relaxed">
+                                        <span className="font-bold text-gray-700 block mb-1 underline decoration-gray-200">Not on the list?</span>
+                                        Ask the bill creator to add your name inside the room so you can join!
+                                    </p>
+                                </div>
                             </div>
-                        </div>
-                    )}
+                        ) : (
+                            !loading && (
+                                <div className="text-center py-8">
+                                    <p className="text-gray-500">Wait for the creator to add participants first.</p>
+                                </div>
+                            )
+                        )}
 
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                            {participants.length > 0 ? 'Or join as someone else' : 'Your Name'}
-                        </label>
-                        <input
-                            ref={nameInputRef}
-                            type="text"
-                            required
-                            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
-                            placeholder="e.g. Sarah"
-                            value={userName}
-                            onChange={(e) => setUserName(e.target.value)}
-                            autoFocus={!urlCode}
-                        />
+                        <button
+                            type="button"
+                            onClick={() => navigate('/')}
+                            className="w-full text-gray-500 text-sm hover:text-gray-700 mt-4 font-medium transition-colors"
+                        >
+                            Cancel
+                        </button>
                     </div>
-
-                    <button
-                        type="submit"
-                        className="w-full bg-primary-600 hover:bg-primary-700 text-white font-bold py-3 px-6 rounded-xl shadow-sm transition-all mt-6"
-                    >
-                        Join Room
-                    </button>
-
-                    <button
-                        type="button"
-                        onClick={() => navigate('/')}
-                        className="w-full text-gray-500 text-sm hover:text-gray-700 mt-4 font-medium"
-                    >
-                        Cancel
-                    </button>
-                </form>
+                </div>
             </div>
         </div>
     );

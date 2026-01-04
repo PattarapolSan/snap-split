@@ -32,7 +32,8 @@ const RoomHeader: React.FC<RoomHeaderProps> = ({
     const [copied, setCopied] = useState(false);
 
     const handleCopy = () => {
-        navigator.clipboard.writeText(roomCode);
+        const joinUrl = `${window.location.origin}/join?code=${roomCode}`;
+        navigator.clipboard.writeText(joinUrl);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
     };
@@ -74,7 +75,7 @@ const RoomHeader: React.FC<RoomHeaderProps> = ({
                                     onClick={handleCopy}
                                     className="px-3 py-1.5 sm:py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-[11px] font-bold rounded-lg transition-colors active:scale-95"
                                 >
-                                    {copied ? 'Copied!' : 'Copy'}
+                                    {copied ? 'Copied!' : 'Copy Link'}
                                 </button>
                                 <button
                                     onClick={() => setShowQR(true)}
