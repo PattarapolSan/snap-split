@@ -43,7 +43,9 @@ const Room = () => {
         fetchData();
 
         // Socket Connection
-        const socket = io(import.meta.env.VITE_API_URL || 'http://localhost:3001');
+        const isDev = import.meta.env.DEV;
+        const socketUrl = import.meta.env.VITE_API_URL || (isDev ? 'http://localhost:3001' : undefined);
+        const socket = io(socketUrl);
 
         socket.on('connect', () => {
             socket.emit('join-room', code);
