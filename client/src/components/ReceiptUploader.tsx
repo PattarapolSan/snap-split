@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Camera, Loader2 } from 'lucide-react';
+import { ImagePlus, Loader2 } from 'lucide-react';
 import { api } from '../lib/api';
 import { useRoomStore } from '../store/roomStore';
 
@@ -98,7 +98,6 @@ const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ roomCode, onItemsFoun
             <input
                 type="file"
                 accept="image/*"
-                capture="environment" // Defaults to rear camera on mobile
                 className="hidden"
                 ref={fileInputRef}
                 onChange={handleFileChange}
@@ -108,22 +107,22 @@ const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ roomCode, onItemsFoun
                 disabled={analyzing}
                 onClick={() => fileInputRef.current?.click()}
                 className={`
-                    w-full py-3 px-4 rounded-xl font-semibold shadow-sm border transition-all flex items-center justify-center gap-2
+                    w-full py-4 px-6 rounded-2xl font-bold shadow-md border transition-all flex items-center justify-center gap-3 active:scale-[0.98]
                     ${analyzing
                         ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
-                        : 'bg-white text-primary-600 border-primary-100 hover:bg-primary-50'
+                        : 'bg-primary-600 text-white border-primary-500 hover:bg-primary-700'
                     }
                 `}
             >
                 {analyzing ? (
                     <>
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                        Analyzing Receipt...
+                        <Loader2 className="w-6 h-6 animate-spin" />
+                        Analyzing...
                     </>
                 ) : (
                     <>
-                        <Camera className="w-5 h-5" />
-                        Scan Receipt
+                        <ImagePlus className="w-6 h-6" />
+                        Upload Receipt
                     </>
                 )}
             </button>

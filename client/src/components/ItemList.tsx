@@ -81,50 +81,49 @@ const ItemList: React.FC<ItemListProps> = ({ items, assignments, participants, c
                             key={item.id}
                             onClick={() => onAssign(item.id)}
                             className={`
-                  relative p-4 rounded-xl border transition-all cursor-pointer select-none group
-                  ${isAssignedToMe
+                                relative p-4 rounded-xl border transition-all cursor-pointer select-none group
+                                ${isAssignedToMe
                                     ? 'bg-primary-50 border-primary-200 shadow-sm'
                                     : 'bg-white border-gray-100 hover:border-gray-300'
                                 }
-                `}
+                            `}
                         >
-                            <div className="flex justify-between items-start">
-                                <div className="flex-1">
-                                    <h3 className={`font-medium ${isAssignedToMe ? 'text-primary-900' : 'text-gray-900'}`}>
+                            <div className="flex justify-between items-start gap-3">
+                                <div className="min-w-0 flex-1">
+                                    <h3 className={`font-semibold truncate ${isAssignedToMe ? 'text-primary-900' : 'text-gray-900'}`}>
                                         {item.name}
-                                        {item.quantity > 1 && <span className="text-sm text-gray-500 ml-2">x{item.quantity}</span>}
+                                        {item.quantity > 1 && <span className="text-sm text-gray-500 ml-2 font-normal">x{item.quantity}</span>}
                                     </h3>
-                                    <div className="flex flex-wrap gap-1 mt-1">
+                                    <div className="flex flex-wrap gap-1.5 mt-2">
                                         {assignedNames.length > 0 ? (
                                             assignedNames.map((name, i) => (
-                                                <span key={i} className="text-xs px-2 py-0.5 bg-white/50 rounded-full text-gray-600 border border-gray-100">
+                                                <span key={i} className="text-[10px] px-2 py-0.5 bg-white/60 rounded-full text-gray-600 border border-gray-100 font-medium">
                                                     {name}
                                                 </span>
                                             ))
                                         ) : (
-                                            <span className="text-xs text-gray-400 italic">Unassigned</span>
+                                            <span className="text-[10px] text-gray-400 italic">Tap to assign</span>
                                         )}
                                     </div>
                                 </div>
 
-                                <div className="flex flex-col items-end gap-2">
-                                    <span className={`font-bold ${isAssignedToMe ? 'text-primary-700' : 'text-gray-900'}`}>
+                                <div className="flex flex-col items-end gap-3 shrink-0">
+                                    <span className={`font-bold text-lg ${isAssignedToMe ? 'text-primary-700' : 'text-gray-900'}`}>
                                         ฿{itemTotal.toLocaleString()}
                                     </span>
 
-                                    {/* Action Buttons (visible on hover or always on mobile? Let's make them always visible but subtle) */}
-                                    <div className="flex gap-2 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <div className="flex gap-1.5 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
                                         <button
                                             onClick={(e) => handleEditClick(e, item)}
-                                            className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                                            title="Edit Item"
+                                            className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors bg-gray-50 md:bg-transparent"
+                                            aria-label="Edit Item"
                                         >
                                             <Pencil className="w-4 h-4" />
                                         </button>
                                         <button
                                             onClick={(e) => handleDeleteClick(e, item.id)}
-                                            className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                            title="Delete Item"
+                                            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors bg-gray-50 md:bg-transparent"
+                                            aria-label="Delete Item"
                                         >
                                             <Trash2 className="w-4 h-4" />
                                         </button>

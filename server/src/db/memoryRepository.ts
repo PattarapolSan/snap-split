@@ -89,4 +89,16 @@ export class MemoryRepository implements Repository {
     async deleteRoom(code: string): Promise<boolean> {
         return this.rooms.delete(code);
     }
+
+    async cleanupExpiredRooms(): Promise<number> {
+        const now = new Date().toISOString();
+        let count = 0;
+        for (const [id, room] of this.rooms.entries()) {
+            if (room.expires_at < now) {
+                this.rooms.delete(id);
+                count++;
+            }
+        }
+        return count;
+    }
 }

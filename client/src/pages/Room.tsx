@@ -9,6 +9,8 @@ import ParticipantList from '../components/ParticipantList';
 import SummaryModal from '../components/SummaryModal';
 import ReceiptUploader from '../components/ReceiptUploader';
 
+import { storage } from '../lib/storage';
+
 const Room = () => {
     const { code } = useParams();
     const store = useRoomStore();
@@ -20,14 +22,14 @@ const Room = () => {
 
         // Check for local user identity
         const savedName = localStorage.getItem(`snap-split-user-${code}`);
-        // If no saved user, maybe redirect to join? 
-        // For MVP, we'll just check if we find a participant with same name in store later 
-        // or prompt user (out of scope for now, assume flow started from Join/Create).
 
         const fetchData = async () => {
             try {
                 const data = await api.getRoomState(code);
                 store.setRoomData(data);
+
+                // Save to recent bills history
+                storage.saveRoomVisit(code, data.name, savedName || undefined);
 
                 if (savedName) {
                     const me = data.participants.find((p: any) => p.name === savedName);
@@ -149,8 +151,8 @@ const Room = () => {
     const isCreator = store.currentUser?.name === store.room.creator_name;
 
     return (
-        <div className="min-h-screen bg-gray-50 p-4 pb-24">
-            <div className="max-w-xl mx-auto space-y-4">
+        <div className="min-h-screen bg-gray-50 p-3 sm:p-4 pb-28 sm:pb-32">
+            <div className="max-w-xl mx-auto space-y-3 sm:space-y-4">
                 <RoomHeader
                     roomCode={store.room.code}
                     roomName={store.room.name}
@@ -159,7 +161,7 @@ const Room = () => {
                     onDelete={handleDeleteRoom}
                 />
 
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-gray-100">
                     <div className="flex flex-col gap-4 mb-4">
                         <div className="flex justify-between items-center">
                             <h2 className="text-lg font-bold text-gray-900">Items</h2>

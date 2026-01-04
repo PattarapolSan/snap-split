@@ -6,6 +6,7 @@ export interface SplitResult {
     totalOwed: number;
     items: {
         itemId: string;
+        itemName: string;
         amount: number;
     }[];
 }
@@ -46,6 +47,7 @@ export const calculateSplits = (
 
                 participantResult.items.push({
                     itemId: item.id,
+                    itemName: item.name,
                     amount: shareAmount
                 });
 

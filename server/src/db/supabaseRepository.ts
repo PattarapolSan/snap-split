@@ -195,4 +195,20 @@ export class SupabaseRepository implements Repository {
 
         return !error;
     }
+
+    async cleanupExpiredRooms(): Promise<number> {
+        if (!supabase) throw new Error('Supabase client not initialized');
+
+        const { data, error } = await supabase
+            .from('rooms')
+            .delete()
+            .lt('expires_at', new Date().toISOString())
+            .select();
+
+        if (error) {
+            console.error('Cleanup error:', error);
+            return 0;
+        }
+        return data?.length || 0;
+    }
 }

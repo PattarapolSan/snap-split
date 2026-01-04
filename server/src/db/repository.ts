@@ -16,4 +16,5 @@ export interface Repository {
     // Composite fetch
     getRoomState(code: string): Promise<RoomState | null>;
     deleteRoom(code: string): Promise<boolean>;
+    cleanupExpiredRooms(): Promise<number>;
 }

@@ -3,7 +3,16 @@
 @tailwind utilities;
 
 @layer base {
+
+    html,
     body {
-        @apply bg-gray-50 text-gray-900 antialiased;
+        @apply bg-gray-50 text-gray-900 antialiased overflow-x-hidden;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Improve touch targets for form elements */
+    input,
+    button {
+        @apply touch-manipulation;
     }
 }

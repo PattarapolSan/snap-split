@@ -13,6 +13,9 @@ const generateRoomCode = (): string => {
 
 export class RoomService {
     async createRoom(roomName: string, creatorName: string): Promise<Room> {
+        // Trigger background cleanup
+        repository.cleanupExpiredRooms().catch(err => console.error('Background cleanup failed:', err));
+
         const room: Room = {
             id: uuidv4(),
             code: generateRoomCode(),
@@ -20,7 +23,7 @@ export class RoomService {
             creator_name: creatorName,
             status: 'active',
             created_at: new Date().toISOString(),
-            expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+            expires_at: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString() // 5 days
         };
 
         await repository.createRoom(room);

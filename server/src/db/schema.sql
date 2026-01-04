@@ -9,7 +9,7 @@ create table public.rooms (
   creator_name text not null,
   status text not null check (status in ('active', 'completed')),
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,
-  expires_at timestamp with time zone default timezone('utc'::text, now() + interval '7 days') not null
+  expires_at timestamp with time zone default timezone('utc'::text, now() + interval '5 days') not null
 );
 
 -- Participants table

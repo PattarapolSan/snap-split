@@ -12,7 +12,7 @@ const ParticipantList: React.FC<ParticipantListProps> = ({ participants, splits,
     return (
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             <div className="p-4 border-b border-gray-100 bg-gray-50/50">
-                <h3 className="font-semibold text-gray-900">Participants</h3>
+                <h3 className="font-bold text-gray-900">Participants</h3>
             </div>
             <div className="divide-y divide-gray-100">
                 {participants.map((participant) => {
@@ -21,31 +21,33 @@ const ParticipantList: React.FC<ParticipantListProps> = ({ participants, splits,
                     const isMe = participant.id === currentUserId;
 
                     return (
-                        <div key={participant.id} className="p-4 flex justify-between items-center hover:bg-gray-50 transition-colors">
-                            <div className="flex items-center gap-3">
+                        <div key={participant.id} className="p-4 flex justify-between items-center hover:bg-gray-50 transition-colors active:bg-gray-100">
+                            <div className="flex items-center gap-3 min-w-0">
                                 <div className={`
-                  w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold
-                  ${isMe ? 'bg-primary-100 text-primary-700' : 'bg-gray-100 text-gray-600'}
-                `}>
+                                    w-10 h-10 rounded-full flex items-center justify-center text-sm font-extrabold shrink-0
+                                    ${isMe ? 'bg-primary-100 text-primary-700' : 'bg-gray-100 text-gray-600'}
+                                `}>
                                     {participant.name.charAt(0).toUpperCase()}
                                 </div>
-                                <div>
-                                    <p className="font-medium text-gray-900">
+                                <div className="min-w-0">
+                                    <p className="font-semibold text-gray-900 truncate">
                                         {participant.name}
-                                        {isMe && <span className="ml-2 text-xs text-gray-500">(You)</span>}
+                                        {isMe && <span className="ml-2 text-[10px] bg-primary-50 text-primary-600 px-1.5 py-0.5 rounded uppercase tracking-tighter font-bold">You</span>}
                                     </p>
-                                    <p className="text-xs text-gray-500">
-                                        {split?.items.length || 0} items
+                                    <p className="text-[11px] text-gray-500 font-medium">
+                                        {split?.items.length || 0} items assigned
                                     </p>
                                 </div>
                             </div>
-                            <div className="text-right">
-                                <p className="font-bold text-gray-900">฿{totalOwed.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-                                {participant.paid ? (
-                                    <span className="text-xs text-green-600 font-medium bg-green-50 px-2 py-0.5 rounded-full">Paid</span>
-                                ) : (
-                                    <span className="text-xs text-orange-600 font-medium bg-orange-50 px-2 py-0.5 rounded-full">Unpaid</span>
-                                )}
+                            <div className="text-right shrink-0">
+                                <p className="font-bold text-gray-900 text-lg leading-none">฿{totalOwed.toLocaleString()}</p>
+                                <div className="mt-1">
+                                    {participant.paid ? (
+                                        <span className="text-[10px] text-green-700 font-bold bg-green-50 px-2 py-0.5 rounded-full uppercase tracking-wider border border-green-100">Paid</span>
+                                    ) : (
+                                        <span className="text-[10px] text-orange-700 font-bold bg-orange-50 px-2 py-0.5 rounded-full uppercase tracking-wider border border-orange-100">Unpaid</span>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     );
