@@ -25,7 +25,10 @@
     "noUnusedParameters": true,
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true
+    "noUncheckedSideEffectImports": true,
+    "paths": {
+      "@snap-split/shared": ["../shared/src/index.ts"]
+    }
   },
   "include": [
     "src"

@@ -115,18 +115,18 @@ const Room = () => {
         };
     }, [code]);
 
-    const handleAssign = async (itemId: string) => {
-        if (!store.activeParticipantId || !code) return;
+    const handleAssign = async (itemId: string, participantId: string) => {
+        if (!code) return;
 
         const existing = store.assignments.find(a =>
-            a.item_id === itemId && a.participant_id === store.activeParticipantId
+            a.item_id === itemId && a.participant_id === participantId
         );
 
         try {
             if (existing) {
                 await api.removeAssignment(code, existing.id);
             } else {
-                await api.assignItem(code, itemId, store.activeParticipantId);
+                await api.assignItem(code, itemId, participantId);
             }
         } catch (e) {
             console.error("Assignment failed", e);

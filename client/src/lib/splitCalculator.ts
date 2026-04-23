@@ -1,5 +1,8 @@
 import type { Item, Assignment, Participant } from '@snap-split/shared';
 
+export const formatBaht = (amount: number): string =>
+    amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
 export interface SplitResult {
     participantId: string;
     participantName: string;
@@ -49,7 +52,7 @@ export const calculateSplits = (
                 participantResult.items.push({
                     itemId: item.id,
                     itemName: item.name,
-                    amount: shareAmount
+                    amount: Math.round(shareAmount * 100) / 100
                 });
 
                 participantResult.subtotalOwed += shareAmount;
@@ -57,12 +60,13 @@ export const calculateSplits = (
         });
     });
 
-    // Apply Tax & Service Charge to each participant's subtotal
+    // Apply Tax & Service Charge to each participant's subtotal, then round finals
     const results = Array.from(participantMap.values());
     results.forEach(res => {
+        res.subtotalOwed = Math.round(res.subtotalOwed * 100) / 100;
         const serviceCharge = res.subtotalOwed * (serviceChargeRate / 100);
         const tax = (res.subtotalOwed + serviceCharge) * (taxRate / 100);
-        res.totalOwed = res.subtotalOwed + serviceCharge + tax;
+        res.totalOwed = Math.round((res.subtotalOwed + serviceCharge + tax) * 100) / 100;
     });
 
     return results;

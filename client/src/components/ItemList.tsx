@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import type { Item, Assignment, Participant } from '@snap-split/shared';
-import { Trash2, Pencil } from 'lucide-react';
+import { Trash2, Pencil, ChevronDown } from 'lucide-react';
 
 interface ItemListProps {
     items: Item[];
@@ -9,7 +9,7 @@ interface ItemListProps {
     taxRate: number;
     serviceChargeRate: number;
     currentUserId?: string;
-    onAssign: (itemId: string) => void;
+    onAssign: (itemId: string, participantId: string) => void;
     onDelete: (itemId: string) => void;
     onEdit: (itemId: string, name: string, price: number, quantity: number) => void;
 }
@@ -17,6 +17,7 @@ interface ItemListProps {
 const ItemList: React.FC<ItemListProps> = ({
     items, assignments, participants, taxRate, serviceChargeRate, currentUserId, onAssign, onDelete, onEdit
 }) => {
+    const [expandedItemId, setExpandedItemId] = useState<string | null>(null);
     // Calculate Subtotal (Items only)
     const subtotal = items.reduce((sum, item) => sum + (item.price * (item.quantity || 1)), 0);
 
@@ -54,6 +55,10 @@ const ItemList: React.FC<ItemListProps> = ({
         if (confirm('Delete this item?')) {
             onDelete(itemId);
         }
+    };
+
+    const toggleExpand = (itemId: string) => {
+        setExpandedItemId(prev => prev === itemId ? null : itemId);
     };
 
     if (items.length === 0) {
@@ -96,19 +101,24 @@ const ItemList: React.FC<ItemListProps> = ({
                     // Item total price
                     const itemTotal = item.price * (item.quantity || 1);
 
+                    const isExpanded = expandedItemId === item.id;
+
                     return (
                         <div
                             key={item.id}
-                            onClick={() => onAssign(item.id)}
                             className={`
-                                relative p-4 rounded-xl border transition-all cursor-pointer select-none group
+                                relative rounded-xl border transition-all select-none
                                 ${isAssignedToMe
                                     ? 'bg-primary-50 border-primary-200 shadow-sm'
-                                    : 'bg-white border-gray-100 hover:border-gray-300'
+                                    : 'bg-white border-gray-100'
                                 }
                             `}
                         >
-                            <div className="flex justify-between items-start gap-3">
+                            {/* Item row */}
+                            <div
+                                onClick={() => toggleExpand(item.id)}
+                                className="flex justify-between items-start gap-3 p-4 cursor-pointer group"
+                            >
                                 <div className="min-w-0 flex-1">
                                     <h3 className={`font-semibold truncate ${isAssignedToMe ? 'text-primary-900' : 'text-gray-900'}`}>
                                         {item.name}
@@ -128,9 +138,12 @@ const ItemList: React.FC<ItemListProps> = ({
                                 </div>
 
                                 <div className="flex flex-col items-end gap-3 shrink-0">
-                                    <span className={`font-bold text-lg ${isAssignedToMe ? 'text-primary-700' : 'text-gray-900'}`}>
-                                        ฿{itemTotal.toLocaleString()}
-                                    </span>
+                                    <div className="flex items-center gap-2">
+                                        <span className={`font-bold text-lg ${isAssignedToMe ? 'text-primary-700' : 'text-gray-900'}`}>
+                                            ฿{itemTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                        </span>
+                                        <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
+                                    </div>
 
                                     <div className="flex gap-1.5 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
                                         <button
@@ -150,6 +163,40 @@ const ItemList: React.FC<ItemListProps> = ({
                                     </div>
                                 </div>
                             </div>
+
+                            {/* Participant picker */}
+                            {isExpanded && (
+                                <div className="px-4 pb-4 border-t border-gray-100 pt-3">
+                                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-2">Who had this?</p>
+                                    {participants.length === 0 ? (
+                                        <p className="text-xs text-gray-400 italic">No participants yet</p>
+                                    ) : (
+                                        <div className="flex flex-wrap gap-2">
+                                            {participants.map(p => {
+                                                const assigned = itemAssignments.some(a => a.participant_id === p.id);
+                                                const isMe = p.id === currentUserId;
+                                                return (
+                                                    <button
+                                                        key={p.id}
+                                                        onClick={() => onAssign(item.id, p.id)}
+                                                        className={`
+                                                            flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold border transition-all active:scale-95
+                                                            ${assigned
+                                                                ? 'bg-primary-600 text-white border-primary-600 shadow-sm'
+                                                                : 'bg-white text-gray-600 border-gray-200 hover:border-primary-300 hover:text-primary-600'
+                                                            }
+                                                        `}
+                                                    >
+                                                        <span>{p.name}</span>
+                                                        {isMe && <span className={`text-[9px] font-bold uppercase ${assigned ? 'opacity-70' : 'text-primary-400'}`}>you</span>}
+                                                        {assigned && <span className="text-white/80 text-xs leading-none">✓</span>}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     );
                 })}

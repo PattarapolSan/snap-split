@@ -1,5 +1,6 @@
 import React from 'react';
 import type { SplitResult } from '../lib/splitCalculator';
+import { formatBaht } from '../lib/splitCalculator';
 import { X, CheckCircle2, Share2, Banknote } from 'lucide-react';
 
 interface SummaryModalProps {
@@ -44,20 +45,20 @@ const SummaryModal: React.FC<SummaryModalProps> = ({
             if (s.totalOwed > 0) {
                 lines.push(`👤 *${s.participantName}*`);
                 s.items.forEach(item => {
-                    lines.push(`- ${item.itemName}: ฿${item.amount.toLocaleString()}`);
+                    lines.push(`- ${item.itemName}: ฿${formatBaht(item.amount)}`);
                 });
-                if (serviceChargeRate > 0) lines.push(`- Service Charge (${serviceChargeRate}%): ฿${(s.subtotalOwed * (serviceChargeRate / 100)).toLocaleString()}`);
-                if (taxRate > 0) lines.push(`- Tax (${taxRate}%): ฿${((s.subtotalOwed + (s.subtotalOwed * (serviceChargeRate / 100))) * (taxRate / 100)).toLocaleString()}`);
-                lines.push(`💰 *Total: ฿${s.totalOwed.toLocaleString()}*`);
+                if (serviceChargeRate > 0) lines.push(`- Service Charge (${serviceChargeRate}%): ฿${formatBaht(s.subtotalOwed * (serviceChargeRate / 100))}`);
+                if (taxRate > 0) lines.push(`- Tax (${taxRate}%): ฿${formatBaht((s.subtotalOwed + (s.subtotalOwed * (serviceChargeRate / 100))) * (taxRate / 100))}`);
+                lines.push(`💰 *Total: ฿${formatBaht(s.totalOwed)}*`);
                 lines.push('');
             }
         });
 
         lines.push(`--------------------------`);
-        lines.push(`📍 Subtotal: ฿${subtotal.toLocaleString()}`);
-        if (serviceChargeRate > 0) lines.push(`⚙️ Service Charge (${serviceChargeRate}%): ฿${serviceCharge.toLocaleString()}`);
-        if (taxRate > 0) lines.push(`🏦 Tax (${taxRate}%): ฿${tax.toLocaleString()}`);
-        lines.push(`🚩 Total Bill: ฿${totalBill.toLocaleString()}`);
+        lines.push(`📍 Subtotal: ฿${formatBaht(subtotal)}`);
+        if (serviceChargeRate > 0) lines.push(`⚙️ Service Charge (${serviceChargeRate}%): ฿${formatBaht(serviceCharge)}`);
+        if (taxRate > 0) lines.push(`🏦 Tax (${taxRate}%): ฿${formatBaht(tax)}`);
+        lines.push(`🚩 Total Bill: ฿${formatBaht(totalBill)}`);
         lines.push(`💸 Pay to: *${creatorName}*`);
         lines.push('');
         lines.push(`Join here: ${window.location.origin}/join?code=${roomCode}`);
@@ -95,7 +96,7 @@ const SummaryModal: React.FC<SummaryModalProps> = ({
                                     {split.participantName}
                                 </span>
                                 <span className="font-black text-gray-900 text-lg">
-                                    ฿{split.totalOwed.toLocaleString()}
+                                    ฿{formatBaht(split.totalOwed)}
                                 </span>
                             </div>
 
@@ -103,19 +104,19 @@ const SummaryModal: React.FC<SummaryModalProps> = ({
                                 {split.items.map((item, idx) => (
                                     <div key={`${item.itemId}-${idx}`} className="flex justify-between text-[13px]">
                                         <span className="text-gray-500 truncate pr-4">{item.itemName}</span>
-                                        <span className="text-gray-600 font-medium shrink-0">฿{item.amount.toLocaleString()}</span>
+                                        <span className="text-gray-600 font-medium shrink-0">฿{formatBaht(item.amount)}</span>
                                     </div>
                                 ))}
                                 {serviceChargeRate > 0 && (
                                     <div className="flex justify-between text-[11px] font-medium text-gray-400 italic">
                                         <span>Service Charge ({serviceChargeRate}%)</span>
-                                        <span>฿{(split.subtotalOwed * (serviceChargeRate / 100)).toLocaleString()}</span>
+                                        <span>฿{formatBaht(split.subtotalOwed * (serviceChargeRate / 100))}</span>
                                     </div>
                                 )}
                                 {taxRate > 0 && (
                                     <div className="flex justify-between text-[11px] font-medium text-gray-400 italic">
                                         <span>Tax ({taxRate}%)</span>
-                                        <span>฿{((split.subtotalOwed + (split.subtotalOwed * (serviceChargeRate / 100))) * (taxRate / 100)).toLocaleString()}</span>
+                                        <span>฿{formatBaht((split.subtotalOwed + (split.subtotalOwed * (serviceChargeRate / 100))) * (taxRate / 100))}</span>
                                     </div>
                                 )}
                             </div>
@@ -125,24 +126,24 @@ const SummaryModal: React.FC<SummaryModalProps> = ({
                     <div className="p-5 bg-primary-50 rounded-3xl border-2 border-primary-100 mt-2 space-y-3">
                         <div className="flex justify-between items-center text-sm font-bold text-primary-400 uppercase tracking-widest">
                             <span>Subtotal</span>
-                            <span>฿{splits.reduce((sum, s) => sum + s.subtotalOwed, 0).toLocaleString()}</span>
+                            <span>฿{formatBaht(splits.reduce((sum, s) => sum + s.subtotalOwed, 0))}</span>
                         </div>
                         {serviceChargeRate > 0 && (
                             <div className="flex justify-between items-center text-sm font-bold text-primary-400 uppercase tracking-widest">
                                 <span>Service Charge ({serviceChargeRate}%)</span>
-                                <span>฿{(splits.reduce((sum, s) => sum + s.subtotalOwed, 0) * (serviceChargeRate / 100)).toLocaleString()}</span>
+                                <span>฿{formatBaht(splits.reduce((sum, s) => sum + s.subtotalOwed, 0) * (serviceChargeRate / 100))}</span>
                             </div>
                         )}
                         {taxRate > 0 && (
                             <div className="flex justify-between items-center text-sm font-bold text-primary-400 uppercase tracking-widest">
                                 <span>Tax ({taxRate}%)</span>
-                                <span>฿{((splits.reduce((sum, s) => sum + s.subtotalOwed, 0) + (splits.reduce((sum, s) => sum + s.subtotalOwed, 0) * (serviceChargeRate / 100))) * (taxRate / 100)).toLocaleString()}</span>
+                                <span>฿{formatBaht((splits.reduce((sum, s) => sum + s.subtotalOwed, 0) + (splits.reduce((sum, s) => sum + s.subtotalOwed, 0) * (serviceChargeRate / 100))) * (taxRate / 100))}</span>
                             </div>
                         )}
                         <div className="flex justify-between items-center pt-3 border-t border-primary-200/50">
                             <span className="font-black text-primary-900 uppercase tracking-widest text-sm">Total Bill</span>
                             <span className="font-black text-primary-700 text-3xl">
-                                ฿{totalBill.toLocaleString()}
+                                ฿{formatBaht(totalBill)}
                             </span>
                         </div>
                     </div>
