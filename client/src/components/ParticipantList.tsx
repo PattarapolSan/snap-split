@@ -1,7 +1,7 @@
 import React from 'react';
 import type { Participant } from '@snap-split/shared';
 import type { SplitResult } from '../lib/splitCalculator';
-import { formatBaht } from '../lib/splitCalculator';
+import { formatBahtWhole } from '../lib/splitCalculator';
 
 interface ParticipantListProps {
     participants: Participant[];
@@ -67,7 +67,7 @@ const ParticipantList: React.FC<ParticipantListProps> = ({
                                 </div>
                             </div>
                             <div className="text-right shrink-0">
-                                <p className="font-bold text-gray-900 text-lg leading-none">฿{formatBaht(totalOwed)}</p>
+                                <p className="font-bold text-gray-900 text-lg leading-none">฿{formatBahtWhole(totalOwed)}</p>
                                 <div className="mt-1">
                                     {participant.paid ? (
                                         <span className="text-[10px] text-green-700 font-bold bg-green-50 px-2 py-0.5 rounded-full uppercase tracking-wider border border-green-100">Paid</span>
