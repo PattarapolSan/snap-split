@@ -40,7 +40,7 @@ const SummaryModal: React.FC<SummaryModalProps> = ({
         ];
 
         splits.filter(s => s.totalOwed > 0).forEach(s => {
-            lines.push(`👤 *${s.participantName}* → ฿${formatBahtWhole(s.totalOwed)}`);
+            lines.push(`👤 *${s.participantName}* → ฿${formatBaht(s.totalOwed)}`);
             s.items.forEach(item => {
                 lines.push(`  • ${item.itemName}  ฿${formatBaht(item.amount)}`);
             });
@@ -91,7 +91,7 @@ const SummaryModal: React.FC<SummaryModalProps> = ({
                                     {split.participantName}
                                 </span>
                                 <span className="font-black text-gray-900 text-lg">
-                                    ฿{formatBahtWhole(split.totalOwed)}
+                                    ฿{formatBaht(split.totalOwed)}
                                 </span>
                             </div>
 
