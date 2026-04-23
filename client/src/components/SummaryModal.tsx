@@ -30,38 +30,33 @@ const SummaryModal: React.FC<SummaryModalProps> = ({
     const totalBill = splits.reduce((sum, s) => sum + s.totalOwed, 0);
 
     const handleCopy = () => {
+        const subtotal = splits.reduce((sum, s) => sum + s.subtotalOwed, 0);
+        const serviceCharge = Math.round(subtotal * (serviceChargeRate / 100) * 100) / 100;
+        const tax = Math.round((subtotal + serviceCharge) * (taxRate / 100) * 100) / 100;
+
         const lines = [
             `🧾 *${roomName.toUpperCase()}*`,
-            `Code: ${roomCode}`,
-            `--------------------------`,
             ''
         ];
 
-        const subtotal = splits.reduce((sum, s) => sum + s.subtotalOwed, 0);
-        const serviceCharge = subtotal * (serviceChargeRate / 100);
-        const tax = (subtotal + serviceCharge) * (taxRate / 100);
-
-        splits.forEach(s => {
-            if (s.totalOwed > 0) {
-                lines.push(`👤 *${s.participantName}*`);
-                s.items.forEach(item => {
-                    lines.push(`- ${item.itemName}: ฿${formatBaht(item.amount)}`);
-                });
-                if (serviceChargeRate > 0) lines.push(`- Service Charge (${serviceChargeRate}%): ฿${formatBaht(s.subtotalOwed * (serviceChargeRate / 100))}`);
-                if (taxRate > 0) lines.push(`- Tax (${taxRate}%): ฿${formatBaht((s.subtotalOwed + (s.subtotalOwed * (serviceChargeRate / 100))) * (taxRate / 100))}`);
-                lines.push(`💰 *Total: ฿${formatBaht(s.totalOwed)}*`);
-                lines.push('');
-            }
+        splits.filter(s => s.totalOwed > 0).forEach(s => {
+            lines.push(`👤 *${s.participantName}* → ฿${formatBaht(s.totalOwed)}`);
+            s.items.forEach(item => {
+                lines.push(`  • ${item.itemName}  ฿${formatBaht(item.amount)}`);
+            });
+            if (serviceChargeRate > 0) lines.push(`  • SVC ${serviceChargeRate}%  ฿${formatBaht(s.subtotalOwed * (serviceChargeRate / 100))}`);
+            if (taxRate > 0) lines.push(`  • Tax ${taxRate}%  ฿${formatBaht((s.subtotalOwed + s.subtotalOwed * (serviceChargeRate / 100)) * (taxRate / 100))}`);
+            lines.push('');
         });
 
-        lines.push(`--------------------------`);
-        lines.push(`📍 Subtotal: ฿${formatBaht(subtotal)}`);
-        if (serviceChargeRate > 0) lines.push(`⚙️ Service Charge (${serviceChargeRate}%): ฿${formatBaht(serviceCharge)}`);
-        if (taxRate > 0) lines.push(`🏦 Tax (${taxRate}%): ฿${formatBaht(tax)}`);
-        lines.push(`🚩 Total Bill: ฿${formatBaht(totalBill)}`);
-        lines.push(`💸 Pay to: *${creatorName}*`);
+        lines.push(`━━━━━━━━━━━━━━━━`);
+        lines.push(`Subtotal  ฿${formatBaht(subtotal)}`);
+        if (serviceChargeRate > 0) lines.push(`SVC ${serviceChargeRate}%  ฿${formatBaht(serviceCharge)}`);
+        if (taxRate > 0) lines.push(`Tax ${taxRate}%  ฿${formatBaht(tax)}`);
+        lines.push(`*Total  ฿${formatBaht(totalBill)}*`);
+        lines.push(`💸 Pay to *${creatorName}*`);
         lines.push('');
-        lines.push(`Join here: ${window.location.origin}/join?code=${roomCode}`);
+        lines.push(`🔗 ${window.location.origin}/join?code=${roomCode}`);
 
         navigator.clipboard.writeText(lines.join('\n'));
         setCopied(true);
