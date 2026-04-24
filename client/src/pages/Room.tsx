@@ -153,6 +153,20 @@ const Room = () => {
         }
     };
 
+    const handleSplitItem = async (itemId: string, name: string, price: number, quantity: number) => {
+        if (!code || !store.room) return;
+        if (!confirm(`Split "${name} x${quantity}" into ${quantity} separate items?`)) return;
+        try {
+            for (let i = 0; i < quantity; i++) {
+                await api.addItem(code, store.room.id, name, price, 1);
+            }
+            await api.removeItem(code, itemId);
+        } catch (e) {
+            console.error('Failed to split item', e);
+            alert('Failed to split item');
+        }
+    };
+
     const handleAddItem = async () => {
         const name = prompt("Item Name");
         if (!name) return;
@@ -261,6 +275,7 @@ const Room = () => {
                         onAssign={handleAssign}
                         onDelete={handleDeleteItem}
                         onEdit={handleEditItem}
+                        onSplit={handleSplitItem}
                     />
                 </div>
 

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { Item, Assignment, Participant } from '@snap-split/shared';
-import { Trash2, Pencil, ChevronDown } from 'lucide-react';
+import { Trash2, Pencil, ChevronDown, Scissors } from 'lucide-react';
 import { formatBaht } from '../lib/splitCalculator';
 
 interface ItemListProps {
@@ -14,10 +14,11 @@ interface ItemListProps {
     onAssign: (itemId: string, participantId: string) => void;
     onDelete: (itemId: string) => void;
     onEdit: (itemId: string, name: string, price: number, quantity: number) => void;
+    onSplit: (itemId: string, name: string, price: number, quantity: number) => void;
 }
 
 const ItemList: React.FC<ItemListProps> = ({
-    items, assignments, participants, taxRate, serviceChargeRate, rounding, currentUserId, onAssign, onDelete, onEdit
+    items, assignments, participants, taxRate, serviceChargeRate, rounding, currentUserId, onAssign, onDelete, onEdit, onSplit
 }) => {
     const [expandedItemId, setExpandedItemId] = useState<string | null>(null);
     // Calculate Subtotal (Items only)
@@ -163,6 +164,16 @@ const ItemList: React.FC<ItemListProps> = ({
                                     </div>
 
                                     <div className="flex gap-1.5 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
+                                        {item.quantity > 1 && (
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); onSplit(item.id, item.name, item.price, item.quantity); }}
+                                                className="p-2 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors bg-gray-50 md:bg-transparent"
+                                                aria-label="Split Item"
+                                                title={`Split into ${item.quantity} separate items`}
+                                            >
+                                                <Scissors className="w-4 h-4" />
+                                            </button>
+                                        )}
                                         <button
                                             onClick={(e) => handleEditClick(e, item)}
                                             className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors bg-gray-50 md:bg-transparent"
