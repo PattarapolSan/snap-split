@@ -90,12 +90,12 @@ const RoomHeader: React.FC<RoomHeaderProps> = ({
                         </div>
                     </div>
                     <div className="flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto gap-3 pt-3 sm:pt-0 border-t sm:border-t-0 border-gray-50">
-                        <div className="flex flex-col items-end gap-1">
-                            <div className="bg-gray-100 px-3 py-1 rounded-full text-[10px] font-bold text-gray-600 uppercase tracking-tighter">
+                        <div className="flex flex-col items-end gap-1 max-w-[160px]">
+                            <div className="bg-gray-100 px-3 py-1 rounded-full text-[10px] font-bold text-gray-600 uppercase tracking-tighter whitespace-nowrap">
                                 {participantCount} participants
                             </div>
-                            <div className="text-[10px] font-bold text-primary-500 uppercase tracking-tighter">
-                                {serviceChargeRate}% SC • {taxRate}% TAX{rounding !== 0 ? ` • ฿${rounding > 0 ? '+' : ''}${rounding} RND` : ''}
+                            <div className="text-[10px] font-bold text-primary-500 uppercase tracking-tighter text-right leading-4">
+                                {serviceChargeRate}% SC • {taxRate}% TAX{rounding !== 0 ? ` • ${rounding > 0 ? '+' : '-'}฿${Math.abs(rounding)} RND` : ''}
                             </div>
                         </div>
                         {canDelete && (

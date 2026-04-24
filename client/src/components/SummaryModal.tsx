@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useRef } from 'react';
+import html2canvas from 'html2canvas';
 import type { SplitResult } from '../lib/splitCalculator';
 import { formatBaht } from '../lib/splitCalculator';
-import { X, CheckCircle2, Share2, Banknote } from 'lucide-react';
+import { X, CheckCircle2, Share2, Banknote, ImageDown } from 'lucide-react';
 
 interface SummaryModalProps {
     isOpen: boolean;
@@ -27,11 +28,13 @@ const SummaryModal: React.FC<SummaryModalProps> = ({
     rounding
 }) => {
     const [copied, setCopied] = React.useState(false);
+    const [savingImage, setSavingImage] = React.useState(false);
+    const cardRef = useRef<HTMLDivElement>(null);
     if (!isOpen) return null;
 
     const totalBill = splits.reduce((sum, s) => sum + s.totalOwed, 0) + rounding;
 
-    const handleCopy = () => {
+    const buildShareText = () => {
         const subtotal = splits.reduce((sum, s) => sum + s.subtotalOwed, 0);
         const serviceCharge = Math.round(subtotal * (serviceChargeRate / 100) * 100) / 100;
         const tax = Math.round((subtotal + serviceCharge) * (taxRate / 100) * 100) / 100;
@@ -61,9 +64,65 @@ const SummaryModal: React.FC<SummaryModalProps> = ({
         lines.push('');
         lines.push(`🔗 ${window.location.origin}/join?code=${roomCode}`);
 
-        navigator.clipboard.writeText(lines.join('\n'));
+        return lines.join('\n');
+    };
+
+    const handleShare = async () => {
+        const text = buildShareText();
+        if (navigator.share) {
+            try {
+                await navigator.share({ text });
+                return;
+            } catch (e) {
+                if ((e as DOMException).name === 'AbortError') return; // user cancelled
+                // fall through to clipboard
+            }
+        }
+        navigator.clipboard.writeText(text);
         setCopied(true);
         setTimeout(() => setCopied(false), 3000);
+    };
+
+    const handleSaveImage = async () => {
+        if (!cardRef.current) return;
+        setSavingImage(true);
+        try {
+            const canvas = await html2canvas(cardRef.current, {
+                backgroundColor: '#ffffff',
+                scale: 2,
+                useCORS: true,
+            });
+
+            const fileName = `${roomName.replace(/\s+/g, '_')}_bill.png`;
+
+            // Try native share with image file (supported on mobile browsers)
+            canvas.toBlob(async (blob) => {
+                if (!blob) return;
+                const file = new File([blob], fileName, { type: 'image/png' });
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    try {
+                        await navigator.share({ files: [file], title: roomName });
+                        setSavingImage(false);
+                        return;
+                    } catch (e) {
+                        if ((e as DOMException).name === 'AbortError') {
+                            setSavingImage(false);
+                            return;
+                        }
+                        // fall through to download
+                    }
+                }
+                // Fallback: download
+                const link = document.createElement('a');
+                link.download = fileName;
+                link.href = URL.createObjectURL(blob);
+                link.click();
+                setSavingImage(false);
+            }, 'image/png');
+        } catch (e) {
+            console.error('Failed to save image', e);
+            setSavingImage(false);
+        }
     };
 
     return (
@@ -76,6 +135,7 @@ const SummaryModal: React.FC<SummaryModalProps> = ({
                     <X className="w-6 h-6" />
                 </button>
 
+                <div ref={cardRef} className="bg-white">
                 <div className="flex items-center gap-3 mb-6">
                     <div className="w-12 h-12 bg-primary-100 rounded-2xl flex items-center justify-center">
                         <Banknote className="w-7 h-7 text-primary-600" />
@@ -153,8 +213,7 @@ const SummaryModal: React.FC<SummaryModalProps> = ({
                     </div>
                 </div>
 
-                <div className="space-y-3">
-                    <div className="p-4 bg-orange-50 rounded-2xl border border-orange-100 flex items-center gap-3 mb-2">
+                <div className="p-4 bg-orange-50 rounded-2xl border border-orange-100 flex items-center gap-3 mb-2">
                         <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm">
                             <span className="text-xl">👉</span>
                         </div>
@@ -163,9 +222,11 @@ const SummaryModal: React.FC<SummaryModalProps> = ({
                             <p className="font-bold text-orange-900">{creatorName}</p>
                         </div>
                     </div>
+                </div>{/* end cardRef */}
 
+                <div className="space-y-3 mt-4">
                     <button
-                        onClick={handleCopy}
+                        onClick={handleShare}
                         className={`
                             w-full font-bold py-4 px-6 rounded-2xl flex items-center justify-center gap-3 transition-all active:scale-[0.98] shadow-lg
                             ${copied
@@ -177,7 +238,7 @@ const SummaryModal: React.FC<SummaryModalProps> = ({
                         {copied ? (
                             <>
                                 <CheckCircle2 className="w-6 h-6" />
-                                Copied for Group Chat!
+                                Copied to Clipboard!
                             </>
                         ) : (
                             <>
@@ -185,6 +246,14 @@ const SummaryModal: React.FC<SummaryModalProps> = ({
                                 Share with Friends
                             </>
                         )}
+                    </button>
+                    <button
+                        onClick={handleSaveImage}
+                        disabled={savingImage}
+                        className="w-full font-bold py-4 px-6 rounded-2xl flex items-center justify-center gap-3 transition-all active:scale-[0.98] bg-gray-100 hover:bg-gray-200 text-gray-700 disabled:opacity-60"
+                    >
+                        <ImageDown className="w-6 h-6" />
+                        {savingImage ? 'Preparing...' : 'Share as Image'}
                     </button>
                     <p className="text-xs text-center text-gray-400 font-medium">
                         Send this breakdown to your Line or WhatsApp group
