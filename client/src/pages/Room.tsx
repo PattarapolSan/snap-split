@@ -159,9 +159,12 @@ const Room = () => {
 
     const handleClearItems = async () => {
         if (!code || store.items.length === 0) return;
-        if (!confirm(`Clear all ${store.items.length} items? This cannot be undone.`)) return;
+        if (!confirm(`Clear all ${store.items.length} items and reset tax/SC/rounding? This cannot be undone.`)) return;
         try {
-            await api.clearItems(code);
+            await Promise.all([
+                api.clearItems(code),
+                api.updateRoom(code, { tax_rate: 0, service_charge_rate: 0, rounding: 0 })
+            ]);
         } catch (e) {
             console.error('Failed to clear items', e);
             alert('Failed to clear items');
