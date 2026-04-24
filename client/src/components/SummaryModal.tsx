@@ -254,7 +254,7 @@ const SummaryModal: React.FC<SummaryModalProps> = ({
                 <div style={{ height: '2px', backgroundColor: '#e5e7eb', marginBottom: '16px', borderRadius: '1px' }} />
 
                 {/* Participants */}
-                {activeSplits.map((split, i) => (
+                {activeSplits.map((split) => (
                     <div key={split.participantId} style={{
                         backgroundColor: '#ffffff',
                         borderRadius: '14px',
