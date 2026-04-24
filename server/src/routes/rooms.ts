@@ -32,7 +32,6 @@ router.patch('/:code', async (req, res) => {
             res.status(404).json({ error: 'Room not found' });
         }
     } catch (e) {
-        console.error('[PATCH room] error:', e);
         res.status(500).json({ error: 'Failed to update room' });
     }
 });
