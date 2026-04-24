@@ -12,6 +12,7 @@ interface SummaryModalProps {
     creatorName: string;
     taxRate: number;
     serviceChargeRate: number;
+    rounding: number;
 }
 
 const SummaryModal: React.FC<SummaryModalProps> = ({
@@ -22,12 +23,13 @@ const SummaryModal: React.FC<SummaryModalProps> = ({
     roomCode,
     creatorName,
     taxRate,
-    serviceChargeRate
+    serviceChargeRate,
+    rounding
 }) => {
     const [copied, setCopied] = React.useState(false);
     if (!isOpen) return null;
 
-    const totalBill = splits.reduce((sum, s) => sum + s.totalOwed, 0);
+    const totalBill = splits.reduce((sum, s) => sum + s.totalOwed, 0) + rounding;
 
     const handleCopy = () => {
         const subtotal = splits.reduce((sum, s) => sum + s.subtotalOwed, 0);
@@ -53,6 +55,7 @@ const SummaryModal: React.FC<SummaryModalProps> = ({
         lines.push(`Subtotal  ฿${formatBaht(subtotal)}`);
         if (serviceChargeRate > 0) lines.push(`SVC ${serviceChargeRate}%  ฿${formatBaht(serviceCharge)}`);
         if (taxRate > 0) lines.push(`Tax ${taxRate}%  ฿${formatBaht(tax)}`);
+        if (rounding !== 0) lines.push(`Rounding  ${rounding > 0 ? '+' : ''}฿${formatBaht(rounding)}`);
         lines.push(`*Total  ฿${formatBahtWhole(totalBill)}*`);
         lines.push(`💸 Pay to *${creatorName}*`);
         lines.push('');
@@ -133,6 +136,12 @@ const SummaryModal: React.FC<SummaryModalProps> = ({
                             <div className="flex justify-between items-center text-sm font-bold text-primary-400 uppercase tracking-widest">
                                 <span>Tax ({taxRate}%)</span>
                                 <span>฿{formatBaht((splits.reduce((sum, s) => sum + s.subtotalOwed, 0) + (splits.reduce((sum, s) => sum + s.subtotalOwed, 0) * (serviceChargeRate / 100))) * (taxRate / 100))}</span>
+                            </div>
+                        )}
+                        {rounding !== 0 && (
+                            <div className="flex justify-between items-center text-sm font-bold text-primary-400 uppercase tracking-widest">
+                                <span>Rounding</span>
+                                <span>{rounding > 0 ? '+' : ''}฿{formatBaht(rounding)}</span>
                             </div>
                         )}
                         <div className="flex justify-between items-center pt-3 border-t border-primary-200/50">

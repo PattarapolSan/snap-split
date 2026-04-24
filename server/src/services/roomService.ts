@@ -25,7 +25,8 @@ export class RoomService {
             created_at: new Date().toISOString(),
             expires_at: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(), // 5 days
             tax_rate: 0,
-            service_charge_rate: 0
+            service_charge_rate: 0,
+            rounding: 0
         };
 
         await repository.createRoom(room);

@@ -8,6 +8,7 @@ export interface Room {
     status: 'active' | 'completed';
     tax_rate: number; // Percentage (e.g., 7.0)
     service_charge_rate: number; // Percentage (e.g., 10.0)
+    rounding: number; // Fixed baht adjustment (e.g., -0.70 to round down)
 }
 
 export interface Item {

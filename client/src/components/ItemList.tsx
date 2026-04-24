@@ -9,6 +9,7 @@ interface ItemListProps {
     participants: Participant[];
     taxRate: number;
     serviceChargeRate: number;
+    rounding: number;
     currentUserId?: string;
     onAssign: (itemId: string, participantId: string) => void;
     onDelete: (itemId: string) => void;
@@ -16,7 +17,7 @@ interface ItemListProps {
 }
 
 const ItemList: React.FC<ItemListProps> = ({
-    items, assignments, participants, taxRate, serviceChargeRate, currentUserId, onAssign, onDelete, onEdit
+    items, assignments, participants, taxRate, serviceChargeRate, rounding, currentUserId, onAssign, onDelete, onEdit
 }) => {
     const [expandedItemId, setExpandedItemId] = useState<string | null>(null);
     // Calculate Subtotal (Items only)
@@ -25,7 +26,7 @@ const ItemList: React.FC<ItemListProps> = ({
     // Calculate Grand Total
     const serviceCharge = subtotal * (serviceChargeRate / 100);
     const tax = (subtotal + serviceCharge) * (taxRate / 100);
-    const grandTotal = subtotal + serviceCharge + tax;
+    const grandTotal = subtotal + serviceCharge + tax + rounding;
 
     const handleEditClick = (e: React.MouseEvent, item: Item) => {
         e.stopPropagation();
@@ -78,12 +79,13 @@ const ItemList: React.FC<ItemListProps> = ({
                     <span className="font-semibold text-lg">Grand Total</span>
                     <span className="font-bold text-2xl">฿{formatBahtWhole(grandTotal)}</span>
                 </div>
-                {(taxRate > 0 || serviceChargeRate > 0) && (
+                {(taxRate > 0 || serviceChargeRate > 0 || rounding !== 0) && (
                     <div className="flex justify-between items-center text-xs text-gray-400 border-t border-gray-800 pt-2">
                         <span>Items: ฿{subtotal.toLocaleString()}</span>
                         <div className="flex gap-3">
                             {serviceChargeRate > 0 && <span>SVC {serviceChargeRate}%</span>}
                             {taxRate > 0 && <span>TAX {taxRate}%</span>}
+                            {rounding !== 0 && <span>RND {rounding > 0 ? '+' : ''}฿{rounding}</span>}
                         </div>
                     </div>
                 )}

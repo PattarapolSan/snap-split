@@ -215,14 +215,16 @@ const Room = () => {
                     participantCount={store.participants.length}
                     taxRate={store.room.tax_rate}
                     serviceChargeRate={store.room.service_charge_rate}
+                    rounding={store.room.rounding ?? 0}
                     canDelete={isCreator}
                     onDelete={handleDeleteRoom}
-                    onUpdateRates={async (taxRate, serviceChargeRate) => {
+                    onUpdateRates={async (taxRate, serviceChargeRate, rounding) => {
                         if (!code) return;
                         try {
                             await api.updateRoom(code, {
                                 tax_rate: taxRate,
-                                service_charge_rate: serviceChargeRate
+                                service_charge_rate: serviceChargeRate,
+                                rounding
                             });
                         } catch (e) {
                             console.error('Failed to update rates', e);
@@ -254,6 +256,7 @@ const Room = () => {
                         participants={store.participants}
                         taxRate={store.room.tax_rate}
                         serviceChargeRate={store.room.service_charge_rate}
+                        rounding={store.room.rounding ?? 0}
                         currentUserId={store.activeParticipantId || undefined}
                         onAssign={handleAssign}
                         onDelete={handleDeleteItem}
@@ -291,6 +294,7 @@ const Room = () => {
                     creatorName={store.room.creator_name}
                     taxRate={store.room.tax_rate}
                     serviceChargeRate={store.room.service_charge_rate}
+                    rounding={store.room.rounding ?? 0}
                 />
             </div>
         </div>

@@ -9,9 +9,10 @@ interface RoomHeaderProps {
     participantCount: number;
     taxRate: number;
     serviceChargeRate: number;
+    rounding: number;
     canDelete?: boolean;
     onDelete?: () => void;
-    onUpdateRates?: (taxRate: number, serviceChargeRate: number) => void;
+    onUpdateRates?: (taxRate: number, serviceChargeRate: number, rounding: number) => void;
 }
 
 const RoomHeader: React.FC<RoomHeaderProps> = ({
@@ -20,6 +21,7 @@ const RoomHeader: React.FC<RoomHeaderProps> = ({
     participantCount,
     taxRate,
     serviceChargeRate,
+    rounding,
     canDelete,
     onDelete,
     onUpdateRates
@@ -29,6 +31,7 @@ const RoomHeader: React.FC<RoomHeaderProps> = ({
     const [showRates, setShowRates] = useState(false);
     const [tempTax, setTempTax] = useState(taxRate);
     const [tempSC, setTempSC] = useState(serviceChargeRate);
+    const [tempRounding, setTempRounding] = useState(rounding);
     const [copied, setCopied] = useState(false);
 
     const handleCopy = () => {
@@ -45,7 +48,7 @@ const RoomHeader: React.FC<RoomHeaderProps> = ({
     };
 
     const handleSaveRates = () => {
-        onUpdateRates?.(tempTax, tempSC);
+        onUpdateRates?.(tempTax, tempSC, tempRounding);
         setShowRates(false);
     };
 
@@ -92,7 +95,7 @@ const RoomHeader: React.FC<RoomHeaderProps> = ({
                                 {participantCount} participants
                             </div>
                             <div className="text-[10px] font-bold text-primary-500 uppercase tracking-tighter">
-                                {serviceChargeRate}% SC • {taxRate}% Tax
+                                {serviceChargeRate}% SC • {taxRate}% TAX{rounding !== 0 ? ` • ฿${rounding > 0 ? '+' : ''}${rounding} RND` : ''}
                             </div>
                         </div>
                         {canDelete && (
@@ -101,6 +104,7 @@ const RoomHeader: React.FC<RoomHeaderProps> = ({
                                     onClick={() => {
                                         setTempTax(taxRate);
                                         setTempSC(serviceChargeRate);
+                                        setTempRounding(rounding);
                                         setShowRates(true);
                                     }}
                                     className="text-xs text-primary-600 font-semibold hover:text-primary-700 hover:bg-primary-50 px-2 py-1 rounded-lg transition-colors"
@@ -168,6 +172,18 @@ const RoomHeader: React.FC<RoomHeaderProps> = ({
                                     className="w-full bg-gray-50 border-2 border-gray-100 rounded-2xl px-4 py-3 font-bold text-gray-900 focus:outline-none focus:border-primary-500 transition-all"
                                     placeholder="e.g. 7"
                                 />
+                            </div>
+                            <div>
+                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Rounding (฿)</label>
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    value={tempRounding}
+                                    onChange={e => setTempRounding(Number(e.target.value))}
+                                    className="w-full bg-gray-50 border-2 border-gray-100 rounded-2xl px-4 py-3 font-bold text-gray-900 focus:outline-none focus:border-primary-500 transition-all"
+                                    placeholder="e.g. -0.70"
+                                />
+                                <p className="text-[10px] text-gray-400 mt-1.5 ml-1">Use negative to round down (e.g. -0.70), positive to round up</p>
                             </div>
                         </div>
 
