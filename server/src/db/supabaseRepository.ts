@@ -32,6 +32,8 @@ export class SupabaseRepository implements Repository {
     async updateRoom(roomId: string, updates: Partial<Room>): Promise<Room | null> {
         if (!supabase) throw new Error('Supabase client not initialized');
 
+        console.log('[updateRoom] updates:', JSON.stringify(updates));
+
         const { data, error } = await supabase
             .from('rooms')
             .update(updates)
@@ -39,7 +41,11 @@ export class SupabaseRepository implements Repository {
             .select()
             .single();
 
-        if (error) throw error;
+        if (error) {
+            console.error('[updateRoom] Supabase error:', JSON.stringify(error));
+            throw error;
+        }
+        console.log('[updateRoom] result rounding:', data?.rounding);
         return data;
     }
 
