@@ -79,16 +79,30 @@ const ItemList: React.FC<ItemListProps> = ({
                     <span className="font-semibold text-lg">Grand Total</span>
                     <span className="font-bold text-2xl">฿{formatBaht(grandTotal)}</span>
                 </div>
-                {(taxRate > 0 || serviceChargeRate > 0 || rounding !== 0) && (
-                    <div className="flex justify-between items-center text-xs text-gray-400 border-t border-gray-800 pt-2">
-                        <span>Items: ฿{subtotal.toLocaleString()}</span>
-                        <div className="flex gap-3">
-                            {serviceChargeRate > 0 && <span>SVC {serviceChargeRate}%</span>}
-                            {taxRate > 0 && <span>TAX {taxRate}%</span>}
-                            {rounding !== 0 && <span>RND {rounding > 0 ? '+' : ''}฿{rounding}</span>}
-                        </div>
+                <div className="border-t border-gray-800 pt-2 space-y-1">
+                    <div className="flex justify-between text-xs text-gray-400">
+                        <span>Items</span>
+                        <span>฿{formatBaht(subtotal)}</span>
                     </div>
-                )}
+                    {serviceChargeRate > 0 && (
+                        <div className="flex justify-between text-xs text-gray-400">
+                            <span>SVC {serviceChargeRate}%</span>
+                            <span>฿{formatBaht(serviceCharge)}</span>
+                        </div>
+                    )}
+                    {taxRate > 0 && (
+                        <div className="flex justify-between text-xs text-gray-400">
+                            <span>TAX {taxRate}%</span>
+                            <span>฿{formatBaht(tax)}</span>
+                        </div>
+                    )}
+                    {rounding !== 0 && (
+                        <div className="flex justify-between text-xs text-gray-400">
+                            <span>Rounding</span>
+                            <span>{rounding > 0 ? '+' : ''}฿{formatBaht(rounding)}</span>
+                        </div>
+                    )}
+                </div>
             </div>
 
             <div className="space-y-3">
