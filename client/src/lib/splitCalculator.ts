@@ -1,12 +1,10 @@
 import type { Item, Assignment, Participant } from '@snap-split/shared';
 
-// For item breakdown lines (2 decimal places)
 export const formatBaht = (amount: number): string =>
-    amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-// For per-person totals and grand total (rounded to whole baht)
 export const formatBahtWhole = (amount: number): string =>
-    Math.round(amount).toLocaleString();
+    Math.round(amount).toLocaleString('en-US');
 
 export interface SplitResult {
     participantId: string;
