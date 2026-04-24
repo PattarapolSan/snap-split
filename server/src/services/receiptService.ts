@@ -40,7 +40,10 @@ export class ReceiptService {
         4. **Anti-Hallucination**: DO NOT guess or invent items. If text is blurry or cut off, skip it.
         5. **Unsure Marking**: If not 100% sure of name or price, prefix with "[UNSURE] ".
         6. **Mathematical Consistency**: Aim for the sum of (price × quantity) for all items to match the subtotal on the receipt. If there's a minor rounding difference, prioritize the prices shown on the receipt.
-        7. **Rounding**: Some receipts show a "Rounding", "ปัดเศษ", or "Round" line — a small fixed baht adjustment (e.g. -0.70) that makes the total a round number. Extract this as 'rounding' in baht (negative = round down, positive = round up). If not present, use 0.
+        7. **Rounding**: Handle two cases:
+           - EXPLICIT: Receipt shows a "Rounding", "ปัดเศษ", or "Round" line → extract that value directly as 'rounding' in baht.
+           - SILENT: No rounding line, but the printed grand total is a clean round number that doesn't match (subtotal + service charge + tax). Compute: rounding = grand_total - (subtotal + service_charge + tax). If the difference is small (within ±5 baht), treat it as rounding. Otherwise use 0.
+           Negative rounding = round down (e.g. -0.70), positive = round up.
 
         Return ONLY a JSON object:
         {
