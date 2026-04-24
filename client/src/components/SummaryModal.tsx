@@ -1,6 +1,6 @@
 import React from 'react';
 import type { SplitResult } from '../lib/splitCalculator';
-import { formatBaht, formatBahtWhole } from '../lib/splitCalculator';
+import { formatBaht } from '../lib/splitCalculator';
 import { X, CheckCircle2, Share2, Banknote } from 'lucide-react';
 
 interface SummaryModalProps {
@@ -56,7 +56,7 @@ const SummaryModal: React.FC<SummaryModalProps> = ({
         if (serviceChargeRate > 0) lines.push(`SVC ${serviceChargeRate}%  ฿${formatBaht(serviceCharge)}`);
         if (taxRate > 0) lines.push(`Tax ${taxRate}%  ฿${formatBaht(tax)}`);
         if (rounding !== 0) lines.push(`Rounding  ${rounding > 0 ? '+' : ''}฿${formatBaht(rounding)}`);
-        lines.push(`*Total  ฿${formatBahtWhole(totalBill)}*`);
+        lines.push(`*Total  ฿${formatBaht(totalBill)}*`);
         lines.push(`💸 Pay to *${creatorName}*`);
         lines.push('');
         lines.push(`🔗 ${window.location.origin}/join?code=${roomCode}`);
@@ -147,7 +147,7 @@ const SummaryModal: React.FC<SummaryModalProps> = ({
                         <div className="flex justify-between items-center pt-3 border-t border-primary-200/50">
                             <span className="font-black text-primary-900 uppercase tracking-widest text-sm">Total Bill</span>
                             <span className="font-black text-primary-700 text-3xl">
-                                ฿{formatBahtWhole(totalBill)}
+                                ฿{formatBaht(totalBill)}
                             </span>
                         </div>
                     </div>

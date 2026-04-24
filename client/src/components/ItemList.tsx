@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import type { Item, Assignment, Participant } from '@snap-split/shared';
 import { Trash2, Pencil, ChevronDown } from 'lucide-react';
-import { formatBahtWhole } from '../lib/splitCalculator';
+import { formatBaht } from '../lib/splitCalculator';
 
 interface ItemListProps {
     items: Item[];
@@ -77,7 +77,7 @@ const ItemList: React.FC<ItemListProps> = ({
             <div className="p-4 bg-gray-900 text-white rounded-xl shadow-md space-y-2">
                 <div className="flex justify-between items-center">
                     <span className="font-semibold text-lg">Grand Total</span>
-                    <span className="font-bold text-2xl">฿{formatBahtWhole(grandTotal)}</span>
+                    <span className="font-bold text-2xl">฿{formatBaht(grandTotal)}</span>
                 </div>
                 {(taxRate > 0 || serviceChargeRate > 0 || rounding !== 0) && (
                     <div className="flex justify-between items-center text-xs text-gray-400 border-t border-gray-800 pt-2">
