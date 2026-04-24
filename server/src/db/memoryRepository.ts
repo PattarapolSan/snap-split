@@ -54,12 +54,20 @@ export class MemoryRepository implements Repository {
     }
 
     async deleteItem(itemId: string): Promise<boolean> {
-        // Cascade delete assignments
         const assignmentsToDelete = Array.from(this.assignments.values())
             .filter(a => a.item_id === itemId);
         assignmentsToDelete.forEach(a => this.assignments.delete(a.id));
-
         return this.items.delete(itemId);
+    }
+
+    async clearItems(roomId: string): Promise<boolean> {
+        const roomItems = Array.from(this.items.values()).filter(i => i.room_id === roomId);
+        roomItems.forEach(item => {
+            const itemAssignments = Array.from(this.assignments.values()).filter(a => a.item_id === item.id);
+            itemAssignments.forEach(a => this.assignments.delete(a.id));
+            this.items.delete(item.id);
+        });
+        return true;
     }
 
     async addAssignment(assignment: Assignment): Promise<Assignment> {

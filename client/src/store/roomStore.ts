@@ -21,6 +21,7 @@ interface RoomState {
     removeAssignment: (assignmentId: string) => void;
     setCurrentUser: (user: Participant) => void;
     updateRoom: (updates: Partial<Room>) => void;
+    clearItems: () => void;
     setActiveParticipantId: (id: string | null) => void;
     setOnlineParticipants: (ids: string[]) => void;
 
@@ -124,6 +125,12 @@ export const useRoomStore = create<RoomState>((set) => ({
             };
         });
     },
+
+    clearItems: () => set((state) => ({
+        items: [],
+        assignments: [],
+        splits: calculateSplits([], [], state.participants, state.room?.tax_rate, state.room?.service_charge_rate)
+    })),
 
     setCurrentUser: (user) => set({ currentUser: user, activeParticipantId: user.id }),
     setActiveParticipantId: (id) => set({ activeParticipantId: id }),

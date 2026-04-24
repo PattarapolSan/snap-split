@@ -110,6 +110,10 @@ const Room = () => {
             store.updateRoom(updatedRoom);
         });
 
+        socket.on('items-cleared', () => {
+            store.clearItems();
+        });
+
         return () => {
             socket.disconnect();
         };
@@ -150,6 +154,17 @@ const Room = () => {
         } catch (e) {
             console.error('Failed to delete item', e);
             alert('Failed to delete item');
+        }
+    };
+
+    const handleClearItems = async () => {
+        if (!code || store.items.length === 0) return;
+        if (!confirm(`Clear all ${store.items.length} items? This cannot be undone.`)) return;
+        try {
+            await api.clearItems(code);
+        } catch (e) {
+            console.error('Failed to clear items', e);
+            alert('Failed to clear items');
         }
     };
 
@@ -252,9 +267,16 @@ const Room = () => {
                     <div className="flex flex-col gap-4 mb-4">
                         <div className="flex justify-between items-center">
                             <h2 className="text-lg font-bold text-gray-900">Items</h2>
-                            <button onClick={handleAddItem} className="text-sm text-primary-600 font-semibold bg-primary-50 px-3 py-1 rounded-lg">
-                                + Manual Add
-                            </button>
+                            <div className="flex gap-2">
+                                {store.items.length > 0 && (
+                                    <button onClick={handleClearItems} className="text-sm text-red-500 font-semibold bg-red-50 px-3 py-1 rounded-lg hover:bg-red-100 transition-colors">
+                                        Clear All
+                                    </button>
+                                )}
+                                <button onClick={handleAddItem} className="text-sm text-primary-600 font-semibold bg-primary-50 px-3 py-1 rounded-lg">
+                                    + Manual Add
+                                </button>
+                            </div>
                         </div>
                         <ReceiptUploader
                             roomCode={store.room.code}

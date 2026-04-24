@@ -126,6 +126,21 @@ export class SupabaseRepository implements Repository {
         return true;
     }
 
+    async clearItems(roomId: string): Promise<boolean> {
+        if (!supabase) throw new Error('Supabase client not initialized');
+
+        const { error } = await supabase
+            .from('items')
+            .delete()
+            .eq('room_id', roomId);
+
+        if (error) {
+            console.error('Clear items error:', error);
+            return false;
+        }
+        return true;
+    }
+
     async addAssignment(assignment: Assignment): Promise<Assignment> {
         if (!supabase) throw new Error('Supabase client not initialized');
 

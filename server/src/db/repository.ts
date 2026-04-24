@@ -10,6 +10,7 @@ export interface Repository {
     getItems(roomId: string): Promise<Item[]>;
     updateItem(itemId: string, updates: Partial<Item>): Promise<Item | null>;
     deleteItem(itemId: string): Promise<boolean>;
+    clearItems(roomId: string): Promise<boolean>;
     addAssignment(assignment: Assignment): Promise<Assignment>;
     getAssignments(roomId: string): Promise<Assignment[]>;
     removeAssignment(assignmentId: string): Promise<boolean>;

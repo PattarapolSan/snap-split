@@ -131,6 +131,20 @@ router.delete('/:code/items/:itemId', async (req, res) => {
     }
 });
 
+// Clear All Items
+router.delete('/:code/items', async (req, res) => {
+    try {
+        const state = await roomService.getRoomState(req.params.code);
+        if (!state) return res.status(404).json({ error: 'Room not found' });
+
+        await roomService.clearItems(state.room.id);
+        io.to(req.params.code).emit('items-cleared');
+        res.json({ success: true });
+    } catch (e) {
+        res.status(500).json({ error: 'Failed to clear items' });
+    }
+});
+
 // Add Assignment
 router.post('/:code/assignments', async (req, res) => {
     try {

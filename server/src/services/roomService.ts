@@ -77,6 +77,10 @@ export class RoomService {
         return await repository.deleteItem(itemId);
     }
 
+    async clearItems(roomId: string): Promise<boolean> {
+        return await repository.clearItems(roomId);
+    }
+
     async updateItem(itemId: string, updates: Partial<Item>): Promise<Item | null> {
         return await repository.updateItem(itemId, updates);
     }

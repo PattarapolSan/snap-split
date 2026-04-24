@@ -86,6 +86,14 @@ export const api = {
         return res.json();
     },
 
+    clearItems: async (code: string) => {
+        const res = await fetch(`${API_URL}/rooms/${code}/items`, {
+            method: 'DELETE'
+        });
+        if (!res.ok) throw new Error('Failed to clear items');
+        return res.json();
+    },
+
     deleteRoom: async (code: string) => {
         const res = await fetch(`${API_URL}/rooms/${code}`, {
             method: 'DELETE'
