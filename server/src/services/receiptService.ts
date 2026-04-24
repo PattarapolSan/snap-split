@@ -22,6 +22,7 @@ export class ReceiptService {
         items: Partial<Item>[];
         tax_rate: number;
         service_charge_rate: number;
+        rounding: number;
     }> {
         if (!process.env.CLAUDE_API_KEY) {
             throw new Error('CLAUDE_API_KEY is not configured');
@@ -39,17 +40,19 @@ export class ReceiptService {
         4. **Anti-Hallucination**: DO NOT guess or invent items. If text is blurry or cut off, skip it.
         5. **Unsure Marking**: If not 100% sure of name or price, prefix with "[UNSURE] ".
         6. **Mathematical Consistency**: Aim for the sum of (price × quantity) for all items to match the subtotal on the receipt. If there's a minor rounding difference, prioritize the prices shown on the receipt.
-        
+        7. **Rounding**: Some receipts show a "Rounding", "ปัดเศษ", or "Round" line — a small fixed baht adjustment (e.g. -0.70) that makes the total a round number. Extract this as 'rounding' in baht (negative = round down, positive = round up). If not present, use 0.
+
         Return ONLY a JSON object:
         {
           "items": [
             { "name": "ItemName", "price": 100.0, "quantity": 1 }
           ],
           "tax_rate": 7.0,
-          "service_charge_rate": 0.0
+          "service_charge_rate": 0.0,
+          "rounding": 0.0
         }
-        
-        Exclude subtotals, taxes, or total lines from the "items" list.
+
+        Exclude subtotals, taxes, rounding, or total lines from the "items" list.
         `;
 
         try {
@@ -89,7 +92,8 @@ export class ReceiptService {
                     quantity: Number(item.quantity) || 1
                 })),
                 tax_rate: Number(result.tax_rate) || 0,
-                service_charge_rate: Number(result.service_charge_rate) || 0
+                service_charge_rate: Number(result.service_charge_rate) || 0,
+                rounding: Number(result.rounding) || 0
             };
 
         } catch (error) {
