@@ -34,16 +34,16 @@ export class ReceiptService {
         You are a receipt scanning assistant. Extract purchased items and tax info from the image.
         
         CRITICAL RULES:
-        1. **Price is UNIT PRICE**: The 'price' field must be the the price per single item. If quantity is 2 and the receipt shows 38.00, extract price as 19.00.
-        2. **Tax & Service Charge**: Extract the "Tax" (VAT/GST) and "Service Charge" (SVC/SC) if present as percentages of the subtotal.
-        3. **Base Price Priority**: NEVER include the identified Tax or Service Charge amounts in the item 'price' field. The 'price' must be the BASE price. If the receipt prices are "Tax inclusive", set 'tax_rate' to 0 to avoid double counting.
-        4. **Anti-Hallucination**: DO NOT guess or invent items. If text is blurry or cut off, skip it.
-        5. **Unsure Marking**: If not 100% sure of name or price, prefix with "[UNSURE] ".
-        6. **Mathematical Consistency**: Aim for the sum of (price × quantity) for all items to match the subtotal on the receipt. If there's a minor rounding difference, prioritize the prices shown on the receipt.
+        1. **Price is UNIT PRICE**: The 'price' field must be the price per single item. If quantity is 2 and the receipt shows 38.00, extract price as 19.00.
+        2. **Tax (STRICT)**: Set 'tax_rate' ONLY if a Tax/VAT/GST line with a percentage is EXPLICITLY printed on the receipt. NEVER assume or infer tax from country, restaurant type, or math. If you do not see a tax line printed, tax_rate MUST be 0.
+        3. **Service Charge**: Extract the "Service Charge" (SVC/SC) percentage only if explicitly printed.
+        4. **Base Price Priority**: NEVER include Tax or Service Charge amounts in the item 'price'. If prices are tax-inclusive, set tax_rate to 0.
+        5. **Anti-Hallucination**: DO NOT guess or invent items or rates. If text is blurry or cut off, skip it.
+        6. **Unsure Marking**: If not 100% sure of name or price, prefix with "[UNSURE] ".
         7. **Rounding**: Handle two cases:
            - EXPLICIT: Receipt shows a "Rounding", "ปัดเศษ", or "Round" line → extract that value directly as 'rounding' in baht.
-           - SILENT: No rounding line, but the printed grand total is a clean round number that doesn't match (subtotal + service charge + tax). Compute: rounding = grand_total - (subtotal + service_charge + tax). If the difference is small (within ±5 baht), treat it as rounding. Otherwise use 0.
-           Negative rounding = round down (e.g. -0.70), positive = round up.
+           - SILENT: No rounding line, but grand total on receipt differs from (subtotal + service_charge_amount) by a small amount (within ±5 baht) → rounding = printed_grand_total - (subtotal + service_charge_amount). Do NOT add tax to explain the difference.
+           Negative rounding = round down, positive = round up. Default 0.
 
         Return ONLY a JSON object:
         {
