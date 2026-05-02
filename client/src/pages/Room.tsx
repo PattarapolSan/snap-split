@@ -202,9 +202,8 @@ const Room = () => {
         }
     };
 
-    const handleAddParticipant = async () => {
-        const name = prompt("Participant Name")?.trim();
-        if (!name || !code) return;
+    const handleAddParticipant = async (name: string) => {
+        if (!code) return;
 
         // Check if name already exists (case-insensitive)
         const exists = store.participants.some(p => p.name.toLowerCase() === name.toLowerCase());
