@@ -37,7 +37,7 @@ const SummaryModal: React.FC<SummaryModalProps> = ({
     const subtotal = splits.reduce((sum, s) => sum + s.subtotalOwed, 0);
     const discountAmount = Math.round(subtotal * (discountRate / 100) * 100) / 100;
     const discountedSubtotal = subtotal - discountAmount;
-    const serviceCharge = Math.round(discountedSubtotal * (serviceChargeRate / 100) * 100) / 100;
+    const serviceCharge = Math.round(subtotal * (serviceChargeRate / 100) * 100) / 100; // SC on original subtotal
     const tax = Math.round((discountedSubtotal + serviceCharge) * (taxRate / 100) * 100) / 100;
     const totalBill = splits.reduce((sum, s) => sum + s.totalOwed, 0) + rounding;
     const activeSplits = splits.filter(s => s.totalOwed > 0);
@@ -51,9 +51,10 @@ const SummaryModal: React.FC<SummaryModalProps> = ({
                 lines.push(`  • ${item.itemName}  ฿${formatBaht(item.amount)}`);
             });
             if (discountRate > 0) lines.push(`  • Discount ${discountRate}%  -฿${formatBaht(s.subtotalOwed * (discountRate / 100))}`);
+            const sSC = s.subtotalOwed * (serviceChargeRate / 100);
             const sDiscounted = s.subtotalOwed * (1 - discountRate / 100);
-            if (serviceChargeRate > 0) lines.push(`  • SVC ${serviceChargeRate}%  ฿${formatBaht(sDiscounted * (serviceChargeRate / 100))}`);
-            if (taxRate > 0) lines.push(`  • Tax ${taxRate}%  ฿${formatBaht((sDiscounted + sDiscounted * (serviceChargeRate / 100)) * (taxRate / 100))}`);
+            if (serviceChargeRate > 0) lines.push(`  • SVC ${serviceChargeRate}%  ฿${formatBaht(sSC)}`);
+            if (taxRate > 0) lines.push(`  • Tax ${taxRate}%  ฿${formatBaht((sDiscounted + sSC) * (taxRate / 100))}`);
             lines.push('');
         });
 
@@ -172,13 +173,13 @@ const SummaryModal: React.FC<SummaryModalProps> = ({
                                 {serviceChargeRate > 0 && (
                                     <div className="flex justify-between text-[11px] font-medium text-gray-400 italic">
                                         <span>Service Charge ({serviceChargeRate}%)</span>
-                                        <span>฿{formatBaht(split.subtotalOwed * (1 - discountRate / 100) * (serviceChargeRate / 100))}</span>
+                                        <span>฿{formatBaht(split.subtotalOwed * (serviceChargeRate / 100))}</span>
                                     </div>
                                 )}
                                 {taxRate > 0 && (
                                     <div className="flex justify-between text-[11px] font-medium text-gray-400 italic">
                                         <span>Tax ({taxRate}%)</span>
-                                        <span>฿{formatBaht(split.subtotalOwed * (1 - discountRate / 100) * (1 + serviceChargeRate / 100) * (taxRate / 100))}</span>
+                                        <span>฿{formatBaht((split.subtotalOwed * (1 - discountRate / 100) + split.subtotalOwed * (serviceChargeRate / 100)) * (taxRate / 100))}</span>
                                     </div>
                                 )}
                             </div>
@@ -300,13 +301,13 @@ const SummaryModal: React.FC<SummaryModalProps> = ({
                             {serviceChargeRate > 0 && (
                                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#9ca3af', marginBottom: '2px', fontStyle: 'italic' }}>
                                     <span>SVC {serviceChargeRate}%</span>
-                                    <span>฿{formatBaht(split.subtotalOwed * (1 - discountRate / 100) * (serviceChargeRate / 100))}</span>
+                                    <span>฿{formatBaht(split.subtotalOwed * (serviceChargeRate / 100))}</span>
                                 </div>
                             )}
                             {taxRate > 0 && (
                                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#9ca3af', fontStyle: 'italic' }}>
                                     <span>Tax {taxRate}%</span>
-                                    <span>฿{formatBaht(split.subtotalOwed * (1 - discountRate / 100) * (1 + serviceChargeRate / 100) * (taxRate / 100))}</span>
+                                    <span>฿{formatBaht((split.subtotalOwed * (1 - discountRate / 100) + split.subtotalOwed * (serviceChargeRate / 100)) * (taxRate / 100))}</span>
                                 </div>
                             )}
                         </div>

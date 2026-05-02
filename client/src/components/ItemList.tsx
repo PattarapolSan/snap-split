@@ -25,10 +25,10 @@ const ItemList: React.FC<ItemListProps> = ({
     // Calculate Subtotal (Items only)
     const subtotal = items.reduce((sum, item) => sum + (item.price * (item.quantity || 1)), 0);
 
-    // Calculate Grand Total: discount → SC → tax
+    // Calculate Grand Total: discount on items, SC on original subtotal, tax on (discounted + SC)
     const discount = subtotal * (discountRate / 100);
     const discountedSubtotal = subtotal - discount;
-    const serviceCharge = discountedSubtotal * (serviceChargeRate / 100);
+    const serviceCharge = subtotal * (serviceChargeRate / 100); // SC on original subtotal
     const tax = (discountedSubtotal + serviceCharge) * (taxRate / 100);
     const grandTotal = discountedSubtotal + serviceCharge + tax + rounding;
 

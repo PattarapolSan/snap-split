@@ -70,7 +70,7 @@ export const calculateSplits = (
         res.subtotalOwed = Math.round(res.subtotalOwed * 100) / 100;
         const discount = res.subtotalOwed * (discountRate / 100);
         const discountedSubtotal = res.subtotalOwed - discount;
-        const serviceCharge = discountedSubtotal * (serviceChargeRate / 100);
+        const serviceCharge = res.subtotalOwed * (serviceChargeRate / 100); // SC on original subtotal
         const tax = (discountedSubtotal + serviceCharge) * (taxRate / 100);
         res.totalOwed = Math.round((discountedSubtotal + serviceCharge + tax) * 100) / 100;
     });
