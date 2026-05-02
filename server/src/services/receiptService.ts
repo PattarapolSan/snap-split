@@ -36,7 +36,7 @@ export class ReceiptService {
 
         CRITICAL RULES:
         1. **Price is UNIT PRICE**: The 'price' field must be the price per single item. If quantity is 2 and the receipt shows 38.00, extract price as 19.00.
-        2. **Tax (STRICT)**: Set 'tax_rate' ONLY if ALL of these are true: (a) a Tax/VAT/GST percentage line is explicitly printed, AND (b) the receipt does NOT say "VAT Included", "รวม VAT", "VAT Included **", or any similar phrase indicating tax is already in the prices. If prices are tax-inclusive (VAT included), set tax_rate to 0 regardless of any VAT percentage shown. NEVER assume or infer tax from country, restaurant type, or math.
+        2. **Tax (STRICT)**: Set 'tax_rate' ONLY if a Tax/VAT/GST line with a percentage is EXPLICITLY printed on the receipt. NEVER assume or infer tax from country, restaurant type, or math. If you do not see a tax line printed, tax_rate MUST be 0. Note: "VAT Included" on a receipt means VAT is included in the final total (i.e., prices are ex-VAT and VAT is added on top) — in this case you SHOULD extract the VAT percentage.
         3. **Service Charge**: Extract the "Service Charge" (SVC/SC) percentage only if explicitly printed.
         4. **TAX vs SERVICE CHARGE are DISTINCT**: NEVER put the same value in both 'tax_rate' and 'service_charge_rate'. They are different charges. If only one rate is printed (e.g. only Service Charge), set only that field; the other MUST be 0. If both are printed with the same percentage, verify they are truly separate before setting both.
         5. **Discount**: If a discount line is explicitly printed with a percentage (e.g. "Discount 15%", "Member discount 10%", "Promo 20%"), extract the percentage as 'discount_rate'. Set 0 if no discount line is found.
