@@ -22,6 +22,7 @@ export class ReceiptService {
         items: Partial<Item>[];
         tax_rate: number;
         service_charge_rate: number;
+        discount_rate: number;
         rounding: number;
     }> {
         if (!process.env.CLAUDE_API_KEY) {
@@ -32,15 +33,17 @@ export class ReceiptService {
 
         const systemPrompt = `
         You are a receipt scanning assistant. Extract purchased items and tax info from the image.
-        
+
         CRITICAL RULES:
         1. **Price is UNIT PRICE**: The 'price' field must be the price per single item. If quantity is 2 and the receipt shows 38.00, extract price as 19.00.
         2. **Tax (STRICT)**: Set 'tax_rate' ONLY if a Tax/VAT/GST line with a percentage is EXPLICITLY printed on the receipt. NEVER assume or infer tax from country, restaurant type, or math. If you do not see a tax line printed, tax_rate MUST be 0.
         3. **Service Charge**: Extract the "Service Charge" (SVC/SC) percentage only if explicitly printed.
-        4. **Base Price Priority**: NEVER include Tax or Service Charge amounts in the item 'price'. If prices are tax-inclusive, set tax_rate to 0.
-        5. **Anti-Hallucination**: DO NOT guess or invent items or rates. If text is blurry or cut off, skip it.
-        6. **Unsure Marking**: If not 100% sure of name or price, prefix with "[UNSURE] ".
-        7. **Rounding**: Handle two cases:
+        4. **TAX vs SERVICE CHARGE are DISTINCT**: NEVER put the same value in both 'tax_rate' and 'service_charge_rate'. They are different charges. If only one rate is printed (e.g. only Service Charge), set only that field; the other MUST be 0. If both are printed with the same percentage, verify they are truly separate before setting both.
+        5. **Discount**: If a discount line is explicitly printed with a percentage (e.g. "Discount 15%", "Member discount 10%", "Promo 20%"), extract the percentage as 'discount_rate'. Set 0 if no discount line is found.
+        6. **Base Price Priority**: NEVER include Tax or Service Charge amounts in the item 'price'. If prices are tax-inclusive, set tax_rate to 0.
+        7. **Anti-Hallucination**: DO NOT guess or invent items or rates. If text is blurry or cut off, skip it.
+        8. **Unsure Marking**: If not 100% sure of name or price, prefix with "[UNSURE] ".
+        9. **Rounding**: Handle two cases:
            - EXPLICIT: Receipt shows a "Rounding", "ปัดเศษ", or "Round" line → extract that value directly as 'rounding' in baht.
            - SILENT: No rounding line, but grand total on receipt differs from (subtotal + service_charge_amount) by a small amount (within ±5 baht) → rounding = printed_grand_total - (subtotal + service_charge_amount). Do NOT add tax to explain the difference.
            Negative rounding = round down, positive = round up. Default 0.
@@ -51,11 +54,12 @@ export class ReceiptService {
             { "name": "ItemName", "price": 100.0, "quantity": 1 }
           ],
           "tax_rate": 7.0,
-          "service_charge_rate": 0.0,
+          "service_charge_rate": 10.0,
+          "discount_rate": 0.0,
           "rounding": 0.0
         }
 
-        Exclude subtotals, taxes, rounding, or total lines from the "items" list.
+        Exclude subtotals, taxes, discounts, rounding, or total lines from the "items" list.
         `;
 
         try {
@@ -96,6 +100,7 @@ export class ReceiptService {
                 })),
                 tax_rate: Number(result.tax_rate) || 0,
                 service_charge_rate: Number(result.service_charge_rate) || 0,
+                discount_rate: Number(result.discount_rate) || 0,
                 rounding: Number(result.rounding) || 0
             };
 

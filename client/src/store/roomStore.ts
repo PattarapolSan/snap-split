@@ -47,7 +47,7 @@ export const useRoomStore = create<RoomState>((set) => ({
             assignments: data.assignments,
             onlineParticipantIds: (data as any).onlineParticipantIds || [],
             // Recalculate splits
-            splits: calculateSplits(data.items, data.assignments, data.participants, data.room.tax_rate, data.room.service_charge_rate)
+            splits: calculateSplits(data.items, data.assignments, data.participants, data.room.tax_rate, data.room.service_charge_rate, data.room.discount_rate ?? 0)
         });
     },
 
@@ -57,7 +57,7 @@ export const useRoomStore = create<RoomState>((set) => ({
             const updatedRoom = { ...state.room, ...updates };
             return {
                 room: updatedRoom,
-                splits: calculateSplits(state.items, state.assignments, state.participants, updatedRoom.tax_rate, updatedRoom.service_charge_rate)
+                splits: calculateSplits(state.items, state.assignments, state.participants, updatedRoom.tax_rate, updatedRoom.service_charge_rate, updatedRoom.discount_rate ?? 0)
             };
         });
     },
@@ -67,7 +67,7 @@ export const useRoomStore = create<RoomState>((set) => ({
             const newItems = [...state.items, item];
             return {
                 items: newItems,
-                splits: calculateSplits(newItems, state.assignments, state.participants, state.room?.tax_rate, state.room?.service_charge_rate)
+                splits: calculateSplits(newItems, state.assignments, state.participants, state.room?.tax_rate, state.room?.service_charge_rate, state.room?.discount_rate ?? 0)
             };
         });
     },
@@ -77,7 +77,7 @@ export const useRoomStore = create<RoomState>((set) => ({
             const newItems = state.items.map(i => i.id === itemId ? { ...i, ...updates } : i);
             return {
                 items: newItems,
-                splits: calculateSplits(newItems, state.assignments, state.participants, state.room?.tax_rate, state.room?.service_charge_rate)
+                splits: calculateSplits(newItems, state.assignments, state.participants, state.room?.tax_rate, state.room?.service_charge_rate, state.room?.discount_rate ?? 0)
             };
         });
     },
@@ -100,7 +100,7 @@ export const useRoomStore = create<RoomState>((set) => ({
             const newParticipants = [...state.participants, participant];
             return {
                 participants: newParticipants,
-                splits: calculateSplits(state.items, state.assignments, newParticipants, state.room?.tax_rate, state.room?.service_charge_rate)
+                splits: calculateSplits(state.items, state.assignments, newParticipants, state.room?.tax_rate, state.room?.service_charge_rate, state.room?.discount_rate ?? 0)
             };
         });
     },
@@ -111,7 +111,7 @@ export const useRoomStore = create<RoomState>((set) => ({
             const newAssignments = [...otherAssignments, assignment];
             return {
                 assignments: newAssignments,
-                splits: calculateSplits(state.items, newAssignments, state.participants, state.room?.tax_rate, state.room?.service_charge_rate)
+                splits: calculateSplits(state.items, newAssignments, state.participants, state.room?.tax_rate, state.room?.service_charge_rate, state.room?.discount_rate ?? 0)
             };
         });
     },
@@ -121,7 +121,7 @@ export const useRoomStore = create<RoomState>((set) => ({
             const newAssignments = state.assignments.filter(a => a.id !== assignmentId);
             return {
                 assignments: newAssignments,
-                splits: calculateSplits(state.items, newAssignments, state.participants, state.room?.tax_rate, state.room?.service_charge_rate)
+                splits: calculateSplits(state.items, newAssignments, state.participants, state.room?.tax_rate, state.room?.service_charge_rate, state.room?.discount_rate ?? 0)
             };
         });
     },
@@ -129,7 +129,7 @@ export const useRoomStore = create<RoomState>((set) => ({
     clearItems: () => set((state) => ({
         items: [],
         assignments: [],
-        splits: calculateSplits([], [], state.participants, state.room?.tax_rate, state.room?.service_charge_rate)
+        splits: calculateSplits([], [], state.participants, state.room?.tax_rate, state.room?.service_charge_rate, state.room?.discount_rate ?? 0)
     })),
 
     setCurrentUser: (user) => set({ currentUser: user, activeParticipantId: user.id }),

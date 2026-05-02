@@ -163,7 +163,7 @@ const Room = () => {
         try {
             await Promise.all([
                 api.clearItems(code),
-                api.updateRoom(code, { tax_rate: 0, service_charge_rate: 0, rounding: 0 })
+                api.updateRoom(code, { tax_rate: 0, service_charge_rate: 0, discount_rate: 0, rounding: 0 })
             ]);
         } catch (e) {
             console.error('Failed to clear items', e);
@@ -248,15 +248,17 @@ const Room = () => {
                     participantCount={store.participants.length}
                     taxRate={store.room.tax_rate}
                     serviceChargeRate={store.room.service_charge_rate}
+                    discountRate={store.room.discount_rate ?? 0}
                     rounding={store.room.rounding ?? 0}
                     canDelete={isCreator}
                     onDelete={handleDeleteRoom}
-                    onUpdateRates={async (taxRate, serviceChargeRate, rounding) => {
+                    onUpdateRates={async (taxRate, serviceChargeRate, discountRate, rounding) => {
                         if (!code) return;
                         try {
                             await api.updateRoom(code, {
                                 tax_rate: taxRate,
                                 service_charge_rate: serviceChargeRate,
+                                discount_rate: discountRate,
                                 rounding
                             });
                         } catch (e) {
@@ -296,6 +298,7 @@ const Room = () => {
                         participants={store.participants}
                         taxRate={store.room.tax_rate}
                         serviceChargeRate={store.room.service_charge_rate}
+                        discountRate={store.room.discount_rate ?? 0}
                         rounding={store.room.rounding ?? 0}
                         currentUserId={store.activeParticipantId || undefined}
                         onAssign={handleAssign}
@@ -335,6 +338,7 @@ const Room = () => {
                     creatorName={store.room.creator_name}
                     taxRate={store.room.tax_rate}
                     serviceChargeRate={store.room.service_charge_rate}
+                    discountRate={store.room.discount_rate ?? 0}
                     rounding={store.room.rounding ?? 0}
                 />
             </div>

@@ -9,6 +9,7 @@ interface ItemListProps {
     participants: Participant[];
     taxRate: number;
     serviceChargeRate: number;
+    discountRate: number;
     rounding: number;
     currentUserId?: string;
     onAssign: (itemId: string, participantId: string) => void;
@@ -18,16 +19,18 @@ interface ItemListProps {
 }
 
 const ItemList: React.FC<ItemListProps> = ({
-    items, assignments, participants, taxRate, serviceChargeRate, rounding, currentUserId, onAssign, onDelete, onEdit, onSplit
+    items, assignments, participants, taxRate, serviceChargeRate, discountRate, rounding, currentUserId, onAssign, onDelete, onEdit, onSplit
 }) => {
     const [expandedItemId, setExpandedItemId] = useState<string | null>(null);
     // Calculate Subtotal (Items only)
     const subtotal = items.reduce((sum, item) => sum + (item.price * (item.quantity || 1)), 0);
 
-    // Calculate Grand Total
-    const serviceCharge = subtotal * (serviceChargeRate / 100);
-    const tax = (subtotal + serviceCharge) * (taxRate / 100);
-    const grandTotal = subtotal + serviceCharge + tax + rounding;
+    // Calculate Grand Total: discount → SC → tax
+    const discount = subtotal * (discountRate / 100);
+    const discountedSubtotal = subtotal - discount;
+    const serviceCharge = discountedSubtotal * (serviceChargeRate / 100);
+    const tax = (discountedSubtotal + serviceCharge) * (taxRate / 100);
+    const grandTotal = discountedSubtotal + serviceCharge + tax + rounding;
 
     const handleEditClick = (e: React.MouseEvent, item: Item) => {
         e.stopPropagation();
@@ -85,6 +88,12 @@ const ItemList: React.FC<ItemListProps> = ({
                         <span>Items</span>
                         <span>฿{formatBaht(subtotal)}</span>
                     </div>
+                    {discountRate > 0 && (
+                        <div className="flex justify-between text-xs text-gray-400">
+                            <span>Discount {discountRate}%</span>
+                            <span>-฿{formatBaht(discount)}</span>
+                        </div>
+                    )}
                     {serviceChargeRate > 0 && (
                         <div className="flex justify-between text-xs text-gray-400">
                             <span>SVC {serviceChargeRate}%</span>

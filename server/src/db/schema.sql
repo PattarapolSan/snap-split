@@ -11,7 +11,8 @@ create table public.rooms (
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,
   expires_at timestamp with time zone default timezone('utc'::text, now() + interval '5 days') not null,
   tax_rate numeric default 0.0 not null,
-  service_charge_rate numeric default 0.0 not null
+  service_charge_rate numeric default 0.0 not null,
+  discount_rate numeric default 0.0 not null
 );
 
 -- Participants table

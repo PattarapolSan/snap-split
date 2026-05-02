@@ -71,10 +71,11 @@ const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ roomCode, onItemsFoun
 
             if (result.items && result.items.length > 0) {
                 // Apply Tax, Service Charge, and Rounding to the room
-                if (result.tax_rate > 0 || result.service_charge_rate > 0 || result.rounding !== 0) {
+                if (result.tax_rate > 0 || result.service_charge_rate > 0 || result.discount_rate > 0 || result.rounding !== 0) {
                     await api.updateRoom(roomCode, {
                         tax_rate: result.tax_rate,
                         service_charge_rate: result.service_charge_rate,
+                        discount_rate: result.discount_rate ?? 0,
                         rounding: result.rounding ?? 0
                     });
                 }

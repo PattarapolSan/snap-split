@@ -23,7 +23,8 @@ export const calculateSplits = (
     assignments: Assignment[],
     participants: Participant[],
     taxRate: number = 0,
-    serviceChargeRate: number = 0
+    serviceChargeRate: number = 0,
+    discountRate: number = 0
 ): SplitResult[] => {
     // Initialize map for results
     const participantMap = new Map<string, SplitResult>();
@@ -63,13 +64,15 @@ export const calculateSplits = (
         });
     });
 
-    // Apply Tax & Service Charge to each participant's subtotal, then round finals
+    // Apply Discount → Service Charge → Tax to each participant's subtotal, then round finals
     const results = Array.from(participantMap.values());
     results.forEach(res => {
         res.subtotalOwed = Math.round(res.subtotalOwed * 100) / 100;
-        const serviceCharge = res.subtotalOwed * (serviceChargeRate / 100);
-        const tax = (res.subtotalOwed + serviceCharge) * (taxRate / 100);
-        res.totalOwed = Math.round((res.subtotalOwed + serviceCharge + tax) * 100) / 100;
+        const discount = res.subtotalOwed * (discountRate / 100);
+        const discountedSubtotal = res.subtotalOwed - discount;
+        const serviceCharge = discountedSubtotal * (serviceChargeRate / 100);
+        const tax = (discountedSubtotal + serviceCharge) * (taxRate / 100);
+        res.totalOwed = Math.round((discountedSubtotal + serviceCharge + tax) * 100) / 100;
     });
 
     return results;

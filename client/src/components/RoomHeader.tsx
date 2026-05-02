@@ -9,10 +9,11 @@ interface RoomHeaderProps {
     participantCount: number;
     taxRate: number;
     serviceChargeRate: number;
+    discountRate: number;
     rounding: number;
     canDelete?: boolean;
     onDelete?: () => void;
-    onUpdateRates?: (taxRate: number, serviceChargeRate: number, rounding: number) => void;
+    onUpdateRates?: (taxRate: number, serviceChargeRate: number, discountRate: number, rounding: number) => void;
 }
 
 const RoomHeader: React.FC<RoomHeaderProps> = ({
@@ -21,6 +22,7 @@ const RoomHeader: React.FC<RoomHeaderProps> = ({
     participantCount,
     taxRate,
     serviceChargeRate,
+    discountRate,
     rounding,
     canDelete,
     onDelete,
@@ -31,6 +33,7 @@ const RoomHeader: React.FC<RoomHeaderProps> = ({
     const [showRates, setShowRates] = useState(false);
     const [tempTax, setTempTax] = useState(taxRate);
     const [tempSC, setTempSC] = useState(serviceChargeRate);
+    const [tempDiscount, setTempDiscount] = useState(discountRate);
     const [tempRounding, setTempRounding] = useState(rounding);
     const [copied, setCopied] = useState(false);
 
@@ -48,7 +51,7 @@ const RoomHeader: React.FC<RoomHeaderProps> = ({
     };
 
     const handleSaveRates = () => {
-        onUpdateRates?.(tempTax, tempSC, tempRounding);
+        onUpdateRates?.(tempTax, tempSC, tempDiscount, tempRounding);
         setShowRates(false);
     };
 
@@ -95,7 +98,7 @@ const RoomHeader: React.FC<RoomHeaderProps> = ({
                                 {participantCount} participants
                             </div>
                             <div className="text-[10px] font-bold text-primary-500 uppercase tracking-tighter text-right leading-4">
-                                {serviceChargeRate}% SC • {taxRate}% TAX{rounding !== 0 ? ` • ${rounding > 0 ? '+' : '-'}฿${Math.abs(rounding)} RND` : ''}
+                                {serviceChargeRate}% SC{discountRate > 0 ? ` • -${discountRate}% DSC` : ''} • {taxRate}% TAX{rounding !== 0 ? ` • ${rounding > 0 ? '+' : '-'}฿${Math.abs(rounding)} RND` : ''}
                             </div>
                         </div>
                         {canDelete && (
@@ -104,6 +107,7 @@ const RoomHeader: React.FC<RoomHeaderProps> = ({
                                     onClick={() => {
                                         setTempTax(taxRate);
                                         setTempSC(serviceChargeRate);
+                                        setTempDiscount(discountRate);
                                         setTempRounding(rounding);
                                         setShowRates(true);
                                     }}
@@ -162,6 +166,17 @@ const RoomHeader: React.FC<RoomHeaderProps> = ({
                                     className="w-full bg-gray-50 border-2 border-gray-100 rounded-2xl px-4 py-3 font-bold text-gray-900 focus:outline-none focus:border-primary-500 transition-all"
                                     placeholder="e.g. 10"
                                 />
+                            </div>
+                            <div>
+                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Discount (%)</label>
+                                <input
+                                    type="number"
+                                    value={tempDiscount}
+                                    onChange={e => setTempDiscount(Number(e.target.value))}
+                                    className="w-full bg-gray-50 border-2 border-gray-100 rounded-2xl px-4 py-3 font-bold text-gray-900 focus:outline-none focus:border-primary-500 transition-all"
+                                    placeholder="e.g. 15"
+                                />
+                                <p className="text-[10px] text-gray-400 mt-1.5 ml-1">Applied before service charge (e.g. voucher, promo)</p>
                             </div>
                             <div>
                                 <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Tax Rate (VAT/GST %)</label>
